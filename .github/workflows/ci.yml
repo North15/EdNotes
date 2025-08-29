@@ -50,7 +50,7 @@ jobs:
       - name: Build
         run: dotnet build EdNotes.sln --configuration Release --no-restore
       - name: Test
-        run: dotnet test tests/unit/EdNotes.RichText.Tests.csproj --no-build --logger trx --collect:"XPlat Code Coverage" --results-directory artifacts/test-results/dotnet
+        run: dotnet test tests/unit/EdNotes.RichText.Tests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory artifacts/test-results/dotnet
       - name: Upload .NET Test Results
         if: always() && hashFiles('artifacts/test-results/dotnet/**') != ''
         uses: actions/upload-artifact@v4
