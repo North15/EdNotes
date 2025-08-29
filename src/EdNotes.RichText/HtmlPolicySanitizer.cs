@@ -77,20 +77,20 @@ public sealed class HtmlPolicySanitizer
 						var name = rawName.ToLowerInvariant();
 						if (!AllowedAttributes.Contains(name)) continue; // skip disallowed attribute names
 
-						var valueGroup = am.Groups[2].Value; // includes =value portion if present
-						string? value = null;
-						if (!string.IsNullOrEmpty(valueGroup))
-						{
-							var eqIdx = valueGroup.IndexOf('=');
-							if (eqIdx >= 0)
+							var valueGroup = am.Groups[2].Success ? am.Groups[2].Value : string.Empty; // includes =value portion if present
+							string value = string.Empty;
+							if (valueGroup.Length != 0)
 							{
 								value = valueGroup.Substring(eqIdx + 1).Trim();
 								if (value.Length > 1 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\'')))
 								{
-									value = value.Substring(1, value.Length - 2);
+									value = valueGroup.Substring(eqIdx + 1).Trim();
+									if (value.Length > 1 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\'')))
+									{
+										value = value.Substring(1, value.Length - 2);
+									}
 								}
 							}
-						}
 
 						if (name == "href")
 						{
@@ -109,14 +109,14 @@ public sealed class HtmlPolicySanitizer
 							continue;
 						}
 
-						if (value is null)
-						{
-							sb.Append(' ').Append(name);
-						}
-						else
-						{
-							sb.Append(' ').Append(name).Append("=\"").Append(EscapeAttribute(value)).Append('"');
-						}
+							if (value.Length == 0)
+							{
+								sb.Append(' ').Append(name);
+							}
+							else
+							{
+								sb.Append(' ').Append(name).Append("=\"").Append(EscapeAttribute(value)).Append('"');
+							}
 					}
 				}
 

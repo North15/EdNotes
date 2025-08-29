@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
+## [0.2.1] - 2025-08-29
+
+### Added (0.2.1)
+
+- Implemented server `HtmlPolicySanitizer` (allowlist enforcement + link protocol policy parity with client normalizer).
+- Performance regression gate step in CI (baseline 0.60 ms/block @ 20% tolerance).
+- Sanitizer edge-case tests (encoded / obfuscated javascript: schemes, attribute stripping, tag allowlist validation).
+
+### Fixed (0.2.1)
+
+- .NET Framework 4.7.2 compatibility: removed usage of `AsSpan`, range/index (`[^1]`) operators in sanitizer implementation.
+
+### Internal (0.2.1)
+
+- Hardened CI artifact upload steps (conditional uploads, directory prep, xplat coverage extract).
+
 ## [0.2.0] - 2025-08-29
 
 ### Removed

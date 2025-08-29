@@ -15,10 +15,10 @@ Bundle filename is `ednotes.richtext.bundle.js` (legacy `yourorg.richtext.bundle
 
 ## Installation
 
-NuGet (current version 0.2.0):
+NuGet (current version 0.2.1):
 
 ```bash
-dotnet add package EdNotes.RichText --version 0.2.0
+dotnet add package EdNotes.RichText --version 0.2.1
 ```
 
 Add static script reference:
