@@ -30,8 +30,9 @@ jobs:
       - name: Lint JS
         run: npm run lint
       - name: JS Tests
-        run: >-
-          node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage --coverageDirectory=artifacts/coverage/js || echo "JS tests failed" && exit 1
+        run: |
+          node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage --coverageDirectory=artifacts/coverage/js
+          if [ $? -ne 0 ]; then echo "JS tests failed" && exit 1; fi
       - name: JS Coverage Threshold
         run: node scripts/coverage-threshold.mjs
       - name: Upload JS Test Results (if any)
