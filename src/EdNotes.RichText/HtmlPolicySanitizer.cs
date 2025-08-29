@@ -81,14 +81,11 @@ public sealed class HtmlPolicySanitizer
 							string value = string.Empty;
 							if (valueGroup.Length != 0)
 							{
+								int eqIdx = valueGroup.IndexOf('=');
 								value = valueGroup.Substring(eqIdx + 1).Trim();
 								if (value.Length > 1 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\'')))
 								{
-									value = valueGroup.Substring(eqIdx + 1).Trim();
-									if (value.Length > 1 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\'')))
-									{
-										value = value.Substring(1, value.Length - 2);
-									}
+									value = value.Substring(1, value.Length - 2);
 								}
 							}
 
