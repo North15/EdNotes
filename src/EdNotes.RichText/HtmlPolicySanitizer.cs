@@ -46,7 +46,7 @@ public sealed class HtmlPolicySanitizer
 			// Append text between tags (escaped minimally: we trust original text except angle brackets already segmented)
 			if (m.Index > lastIndex)
 			{
-				sb.Append(working.AsSpan(lastIndex, m.Index - lastIndex));
+				sb.Append(working.Substring(lastIndex, m.Index - lastIndex));
 			}
 
 			var closing = m.Groups[1].Value.Length > 0;
@@ -84,8 +84,8 @@ public sealed class HtmlPolicySanitizer
 							var eqIdx = valueGroup.IndexOf('=');
 							if (eqIdx >= 0)
 							{
-								value = valueGroup[(eqIdx + 1)..].Trim();
-								if (value.Length > 1 && ((value[0] == '"' && value[^1] == '"') || (value[0] == '\'' && value[^1] == '\'')))
+								value = valueGroup.Substring(eqIdx + 1).Trim();
+								if (value.Length > 1 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\'')))
 								{
 									value = value.Substring(1, value.Length - 2);
 								}
@@ -132,7 +132,7 @@ public sealed class HtmlPolicySanitizer
 
 		if (lastIndex < working.Length)
 		{
-			sb.Append(working.AsSpan(lastIndex));
+			sb.Append(working.Substring(lastIndex));
 		}
 
 		// Remove any stray angle bracket script openings left (defense-in-depth)
