@@ -63,8 +63,24 @@ jobs:
       - name: .NET Coverage Threshold
         if: success()
         run: |
-          echo Parsing .NET coverage threshold
-          node -e "const fs=require('fs');const xml=fs.readFileSync('artifacts/coverage/dotnet.cobertura.xml','utf8');const m=xml.match(/line-rate=\"([0-9.]+)\"/);if(!m){console.error('No line-rate');process.exit(1);}const pct=(parseFloat(m[1])*100).toFixed(2);const min=parseFloat(process.env.DOTNET_COV_MIN||'60');if(pct<min){console.error('DotNet coverage '+pct+'% below '+min+'%');process.exit(2);}console.log('DotNet coverage '+pct+'% >= '+min+'%');fs.writeFileSync('artifacts/coverage/dotnet-lines.txt',pct);"
+          echo "Parsing .NET coverage threshold"
+          if [ ! -f "artifacts/coverage/dotnet.cobertura.xml" ]; then
+            echo "Error: dotnet.cobertura.xml not found"
+            exit 1
+          fi
+          COVERAGE=$(grep 'line-rate=' artifacts/coverage/dotnet.cobertura.xml | head -1 | awk -F'"' '{print $2}')
+          if [ -z "$COVERAGE" ]; then
+            echo "Error: line-rate not found in coverage file"
+            exit 1
+          fi
+          PCT=$(awk "BEGIN {print $COVERAGE*100}")
+          MIN=${DOTNET_COV_MIN:-70}
+          if (( $(echo "$PCT < $MIN" | bc -l) )); then
+            echo "Coverage $PCT% < min $MIN%"
+            exit 1
+          else
+            echo "Coverage $PCT%"
+          fi
       - name: Upload .NET Coverage
         if: always() && hashFiles('artifacts/coverage/dotnet.cobertura.xml') != ''
         uses: actions/upload-artifact@v4
