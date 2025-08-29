@@ -1,0 +1,17 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Editor Demo";
+}
+<h1>Rich Text Editor Demo</h1>
+<form method="post">
+    <textarea id="notes" name="notes" rows="10"></textarea>
+    <p><button type="submit">Submit</button></p>
+</form>
+@section Scripts {
+<link rel="stylesheet" href="/_content/EdNotes.RichText/editor/editor.css" />
+<script type="module" src="/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js"></script>
+<script type="module">
+  RichText.attach('#notes');
+</script>
+}

@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  <LangVersion>latest</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  <EnableDefaultContentItems>false</EnableDefaultContentItems>
+  <PackageId>EdNotes.RichText</PackageId>
+  <Version>0.2.0</Version>
+  <Authors>EdNotes</Authors>
+    <Description>Secure JavaScript-only rich text editor (no media) for Razor (ASP.NET Core + MVC5). Strict schema; server-side sanitization authoritative.</Description>
+  <PackageReadmeFile>README.md</PackageReadmeFile>
+  <RepositoryUrl>https://github.com/North15/EdNotes</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EnableDefaultRazorItems>false</EnableDefaultRazorItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="wwwroot\editor\**\*" CopyToPublishDirectory="PreserveNewest" />
+  <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Content Include="wwwroot\editor\**\*">
+      <Pack>true</Pack>
+  <PackagePath>contentFiles/any/any/Scripts/EdNotes.RichText/</PackagePath>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>

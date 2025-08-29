@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="js-tests" tests="14" failures="0" errors="0" time="4.647">
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2025-08-29T19:38:26" time="1.284" tests="2">
+    <testcase classname=" strips disallowed javascript: (case + whitespace)" name=" strips disallowed javascript: (case + whitespace)" time="0.006">
+    </testcase>
+    <testcase classname=" strips percent-encoded javascript protocol" name=" strips percent-encoded javascript protocol" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2025-08-29T19:38:27" time="0.487" tests="3">
+    <testcase classname=" list indent and outdent with tab" name=" list indent and outdent with tab" time="0.012">
+    </testcase>
+    <testcase classname=" history limit enforced" name=" history limit enforced" time="0.004">
+    </testcase>
+    <testcase classname=" link add/remove commands" name=" link add/remove commands" time="0.005">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2025-08-29T19:38:28" time="0.473" tests="2">
+    <testcase classname=" table stray rows moved into tbody and disallowed removed" name=" table stray rows moved into tbody and disallowed removed" time="0.008">
+    </testcase>
+    <testcase classname=" task list command sets defaults" name=" task list command sets defaults" time="0.006">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2025-08-29T19:38:28" time="0.451" tests="1">
+    <testcase classname=" heading shortcut ctrl+alt+2" name=" heading shortcut ctrl+alt+2" time="0.007">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2025-08-29T19:38:29" time="0.491" tests="3">
+    <testcase classname=" autosave triggers after interval when content changes" name=" autosave triggers after interval when content changes" time="0.004">
+    </testcase>
+    <testcase classname=" export plain &amp; markdown basic mapping" name=" export plain &amp; markdown basic mapping" time="0.005">
+    </testcase>
+    <testcase classname=" live region friendly message" name=" live region friendly message" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2025-08-29T19:38:29" time="0.46" tests="1">
+    <testcase classname=" paste normalization" name=" paste normalization" time="0.014">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2025-08-29T19:38:30" time="0.433" tests="1">
+    <testcase classname=" block and list wrap" name=" block and list wrap" time="0.009">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2025-08-29T19:38:30" time="0.411" tests="1">
+    <testcase classname=" history batching within idle gap" name=" history batching within idle gap" time="0.006">
+    </testcase>
+  </testsuite>
+</testsuites>

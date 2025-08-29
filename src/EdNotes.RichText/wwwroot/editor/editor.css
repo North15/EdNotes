@@ -1,0 +1,9 @@
+:root { --rtx-border:#d0d7de; --rtx-bg:#fff; --rtx-toolbar-bg:#f6f8fa; --rtx-focus:#0969da; }
+.rtx-editor { border:1px solid var(--rtx-border); background:var(--rtx-bg); font:14px/1.4 system-ui, sans-serif; display:flex; flex-direction:column; }
+.rtx-toolbar { display:flex; gap:4px; padding:4px; background:var(--rtx-toolbar-bg); border-bottom:1px solid var(--rtx-border); }
+.rtx-toolbar button { border:0; background:transparent; padding:4px 6px; cursor:pointer; border-radius:4px; }
+.rtx-toolbar button:focus { outline:2px solid var(--rtx-focus); outline-offset:1px; }
+.rtx-content { flex:1; padding:8px; outline:none; min-height:160px; }
+.rtx-content:focus { outline:2px solid var(--rtx-focus); outline-offset:0; }
+.rtx-content li[data-checked="true"] { list-style: none; position:relative; }
+.rtx-content li[data-checked="true"]::before { content:"✔"; position:absolute; left:-1.2em; }
