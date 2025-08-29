@@ -6,3 +6,8 @@ obj/
 *.snupkg
 node_modules/
 .vscode/
+artifacts/
+tests/unit/TestResults/
+coverage/
+*.trx
+*.cobertura.xml

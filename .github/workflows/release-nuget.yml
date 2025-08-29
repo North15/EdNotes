@@ -1,0 +1,54 @@
+name: release-nuget
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+
+jobs:
+  build-test-pack-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      # Allows overriding; defaults derived from tag (strip leading v)
+      PACKAGE_ID: EdNotes.RichText
+    steps:
+      - uses: actions/checkout@v4
+      - name: Derive Version
+        id: ver
+        run: |
+          ref="${GITHUB_REF_NAME}" # e.g. v0.2.0
+          ver="${ref#v}"
+          echo "version=$ver" >> $GITHUB_OUTPUT
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Restore
+        run: dotnet restore EdNotes.sln
+      - name: Install JS deps
+        run: npm ci
+      - name: Lint JS
+        run: npm run lint
+      - name: JS Tests
+        run: node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config package.json --runInBand --coverage
+      - name: Build
+        run: dotnet build EdNotes.sln -c Release --no-restore
+      - name: .NET Tests
+        run: dotnet test tests/unit/EdNotes.RichText.Tests.csproj --no-build
+      - name: Pack
+        run: dotnet pack src/EdNotes.RichText/EdNotes.RichText.csproj -c Release -p:PackageVersion=${{ steps.ver.outputs.version }} -o ./artifacts
+      - name: Publish (NuGet)
+        if: success()
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "$NUGET_API_KEY" ]; then echo 'NUGET_API_KEY secret not set; skipping publish.'; exit 0; fi
+          dotnet nuget push artifacts/*.nupkg --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
