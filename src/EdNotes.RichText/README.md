@@ -1,46 +1,18 @@
 # EdNotes.RichText
 
-Secure, JavaScript-only rich text editor for ASP.NET Core + MVC5 (Razor). No media handling; strict HTML schema; server-side sanitization authoritative. All links open in a new tab with `target="_blank"` and `rel="noopener noreferrer"`.
+For complete documentation see the root repository `README.md`.
 
-## Features (V1 scope)
+## Summary
 
-- Headings H1–H3, paragraph
-- Bold / italic / underline
-- Lists (ul/ol) + checklists (ul[data-list="task"] li[data-checked])
-- Blockquote, code block (pre/code), hr
-- Tables (structural ops only)
-- Links (scheme allowlist: http, https, mailto, tel) — forced target/rel
-- Undo/redo (planned), paste cleanup (planned)
+Security‑first, no‑media rich text editor with:
 
-## Usage (ASP.NET Core sample)
+* Strict allowlist schema (headings, lists, task lists, tables, core blocks, minimal inline marks)
+* Dual sanitization (client normalizer + server `HtmlPolicySanitizer`)
+* Link protocol allowlist (`https`, `http`, `mailto`, `tel`) + enforced target/rel
+* Undo/redo with batching, autosave hooks, plain + markdown export
+* Accessible toolbar (ARIA, roving tabindex, live announcements)
+* CI performance regression gate
 
-Reference Static Web Assets:
+Usage examples and API details are in the root README.
 
-```html
-<link rel="stylesheet" href="/_content/EdNotes.RichText/editor/editor.css" />
-<script type="module" src="/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js"></script>
-<script type="module" src="/js/demo-init.js"></script>
-```
-
-`demo-init.js` (sample host):
-
-```js
-import { RichText } from '/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js';
-RichText.attach('#notes');
-```
-
-Textarea markup:
-
-```html
-<textarea id="notes" name="notes"></textarea>
-```
-
-## Security / Policy
-
-- Server sanitizer is authoritative (strict allowlist). Client mirrors policy.
-- All external links: target="_blank" rel="noopener noreferrer".
-- Disallowed: inline style attributes, script/event attributes, media tags.
-
-## Licensing
-
-MIT
+License: MIT

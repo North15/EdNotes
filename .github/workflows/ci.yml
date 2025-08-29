@@ -84,6 +84,12 @@ jobs:
       - name: Performance Benchmark
         if: success() && runner.os == 'Linux'
         run: node scripts/bench-normalize.mjs 800 > artifacts/benchmark-normalize.json
+      - name: Performance Regression Gate
+        if: success() && runner.os == 'Linux'
+        env:
+          PERF_BASELINE_MS_PER_BLOCK: 0.60
+          PERF_TOLERANCE_PCT: 20
+        run: node scripts/perf-regression-check.mjs
       - name: Upload Coverage Badges
         if: always() && runner.os == 'Linux'
         uses: actions/upload-artifact@v4

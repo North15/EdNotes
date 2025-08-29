@@ -4,21 +4,21 @@
 ![NuGet](https://img.shields.io/nuget/v/EdNotes.RichText.svg)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/EdNotes.RichText.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![JS Coverage](./artifacts/badges/js-coverage.svg)
-![.NET Coverage](./artifacts/badges/dotnet-coverage.svg)
+
+Coverage & performance badges are emitted as CI artifacts (not committed) while publishing options are evaluated.
 
 A security‑first, lightweight rich‑text editor packaged as a Razor Class Library targeting `net8.0` and `net472`. No media embedding, strict allowlist schema, client + server sanitization parity, accessible toolbar & shortcuts, undo/redo history, autosave, and export helpers.
 
 Bundle filename is `ednotes.richtext.bundle.js` (legacy `yourorg.richtext.bundle.js` removed starting 0.2.0; see CHANGELOG for migration details).
 
-> Performance benchmark (normalization cost) is published as a CI artifact; future CI gate will fail on regressions.
+> Performance benchmark (normalization cost) runs in CI; a regression gate compares ms/block to a baseline (0.60 ms, 20% tolerance) and fails on excess.
 
 ## Installation
 
-NuGet (build produces package):
+NuGet (current version 0.2.0):
 
 ```bash
-dotnet add package EdNotes.RichText --version 0.1.0
+dotnet add package EdNotes.RichText --version 0.2.0
 ```
 
 Add static script reference:
@@ -116,7 +116,12 @@ Ensure the package `IncludeAssets` brings `contentFiles` (default). If you use a
 
 ## Performance
 
-`scripts/bench-normalize.mjs` benchmarks normalization over synthetic documents; CI stores artifact (baseline gating to follow).
+`scripts/bench-normalize.mjs` benchmarks normalization over synthetic documents. CI captures the JSON and invokes `scripts/perf-regression-check.mjs` with:
+
+* PERF_BASELINE_MS_PER_BLOCK=0.60
+* PERF_TOLERANCE_PCT=20
+
+If average ms/block > baseline * (1 + tolerance/100) the build fails. After intentional performance-affecting changes capture a fresh benchmark and update env values in `.github/workflows/ci.yml`.
 
 ## Development Scripts
 
@@ -138,11 +143,11 @@ Please open issues for feature proposals (keep scope small). PRs should include:
 
 ## Roadmap (Next)
 
-* Performance regression gate (compare benchmark vs baseline). ⏳
 * More sanitizer parity tests (.NET) for encoded edge cases. ⏳
 * Task list interaction (toggle checked state via keyboard). ⏳
 * Heading level cycling / remove heading shortcut. ⏳
 * Documentation site sample & theming guidance. ⏳
+* Optional: publish coverage & performance badges publicly.
 
 ## Versioning
 
