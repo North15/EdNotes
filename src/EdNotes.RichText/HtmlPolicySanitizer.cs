@@ -1,144 +1,145 @@
-using System;
-using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
-using System.Linq;
 
 namespace EdNotes.RichText;
 
-public class HtmlPolicySanitizer
+/// <summary>
+/// Server-side HTML policy sanitizer that mirrors the client Normalizer/Schema allowlist.
+/// Intentionally lightweight (regex + scan) given constrained input size from editor.
+/// </summary>
+public sealed class HtmlPolicySanitizer
 {
-    private static readonly HashSet<string> AllowedTags = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "p", "h1", "h2", "h3", "ul", "ol", "li", "blockquote", "pre", "code", "hr",
-        "table", "thead", "tbody", "tr", "th", "td", "strong", "em", "u", "a"
-    };
+	// Allowed element names (lowercase) mirroring client schema
+	private static readonly HashSet<string> AllowedTags = new(new[]
+	{
+		"p","h1","h2","h3","ul","ol","li","blockquote","pre","code","hr",
+		"table","thead","tbody","tr","th","td","strong","em","u","a"
+	});
 
-    private static readonly HashSet<string> AllowedAttributes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "href", "target", "rel", "colspan", "rowspan", "data-list", "data-checked"
-    };
+	// Allowed attributes per element (global subset for simplicity)
+	private static readonly HashSet<string> AllowedAttributes = new(new[]
+	{
+		"href","target","rel","colspan","rowspan","data-list","data-checked"
+	});
 
-    private static readonly Regex LinkProtocolAllow = new(@"^(https?:|mailto:|tel:)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    
-    // Regex to match HTML tags and capture tag name and attributes
-    private static readonly Regex TagRegex = new(@"<(/?)(\w+)([^>]*)>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    
-    // Regex to match attributes
-    private static readonly Regex AttributeRegex = new(@"(\w+)=[""']([^""']*)[""']", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+	private static readonly Regex TagRegex = new("<(/?)([a-zA-Z0-9]+)([^>]*)>", RegexOptions.Compiled);
+	private static readonly Regex AttrRegex = new("([a-zA-Z0-9:-]+)(\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^'\"\\s>]+))?", RegexOptions.Compiled);
+	private static readonly Regex DangerousProtocol = new("^(javascript:)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+	private static readonly Regex AllowedHrefScheme = new("^(https?:|mailto:|tel:)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+	private static readonly Regex ScriptLike = new("<(script|iframe)([>\\s])", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    public string Sanitize(string input)
-    {
-        if (string.IsNullOrEmpty(input))
-            return string.Empty;
+	/// <summary>
+	/// Sanitize HTML fragment, returning a safe subset.
+	/// </summary>
+	public string Sanitize(string? input)
+	{
+		if (string.IsNullOrEmpty(input)) return string.Empty;
 
-        // First, remove script and iframe tags completely (including content)
-        var result = Regex.Replace(input, @"<script\b[^>]*>.*?</script>", "", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        result = Regex.Replace(result, @"<iframe\b[^>]*>.*?</iframe>", "", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-        result = Regex.Replace(result, @"<script\b[^>]*/>", "", RegexOptions.IgnoreCase);
-        result = Regex.Replace(result, @"<iframe\b[^>]*/>", "", RegexOptions.IgnoreCase);
+		// Remove script / iframe blocks entirely including content (greedy safe due to small docs)
+		var working = Regex.Replace(input, "<script[\\s\\S]*?</script>", string.Empty, RegexOptions.IgnoreCase);
+		working = Regex.Replace(working, "<iframe[\\s\\S]*?</iframe>", string.Empty, RegexOptions.IgnoreCase);
 
-        // Process remaining tags
-        result = TagRegex.Replace(result, match =>
-        {
-            var isClosing = !string.IsNullOrEmpty(match.Groups[1].Value);
-            var tagName = match.Groups[2].Value.ToLowerInvariant();
-            var attributes = match.Groups[3].Value;
+		var sb = new StringBuilder();
+		int lastIndex = 0;
+		foreach (Match m in TagRegex.Matches(working))
+		{
+			// Append text between tags (escaped minimally: we trust original text except angle brackets already segmented)
+			if (m.Index > lastIndex)
+			{
+				sb.Append(working.AsSpan(lastIndex, m.Index - lastIndex));
+			}
 
-            // If tag is not allowed, remove it (but keep content for non-closing tags)
-            if (!AllowedTags.Contains(tagName))
-            {
-                return "";
-            }
+			var closing = m.Groups[1].Value.Length > 0;
+			var tagName = m.Groups[2].Value.ToLowerInvariant();
+			var attrPart = m.Groups[3].Value;
 
-            // For closing tags, just return as-is if tag is allowed
-            if (isClosing)
-            {
-                return $"</{tagName}>";
-            }
+			if (!AllowedTags.Contains(tagName))
+			{
+				// Drop disallowed tag entirely (content preserved via text append logic for non-block removals handled above)
+				lastIndex = m.Index + m.Length;
+				continue;
+			}
 
-            // For opening tags, sanitize attributes
-            var sanitizedAttributes = SanitizeAttributes(tagName, attributes);
-            
-            return $"<{tagName}{sanitizedAttributes}>";
-        });
+			if (closing)
+			{
+				sb.Append('<').Append('/').Append(tagName).Append('>');
+			}
+			else
+			{
+				// Build sanitized start tag
+				sb.Append('<').Append(tagName);
+				if (!string.IsNullOrEmpty(attrPart))
+				{
+					foreach (Match am in AttrRegex.Matches(attrPart))
+					{
+						var rawName = am.Groups[1].Value;
+						if (string.IsNullOrEmpty(rawName)) continue;
+						var name = rawName.ToLowerInvariant();
+						if (!AllowedAttributes.Contains(name)) continue; // skip disallowed attribute names
 
-        return result;
-    }
+						var valueGroup = am.Groups[2].Value; // includes =value portion if present
+						string? value = null;
+						if (!string.IsNullOrEmpty(valueGroup))
+						{
+							var eqIdx = valueGroup.IndexOf('=');
+							if (eqIdx >= 0)
+							{
+								value = valueGroup[(eqIdx + 1)..].Trim();
+								if (value.Length > 1 && ((value[0] == '"' && value[^1] == '"') || (value[0] == '\'' && value[^1] == '\'')))
+								{
+									value = value.Substring(1, value.Length - 2);
+								}
+							}
+						}
 
-    private string SanitizeAttributes(string tagName, string attributesString)
-    {
-        if (string.IsNullOrWhiteSpace(attributesString))
-            return "";
+						if (name == "href")
+						{
+							if (string.IsNullOrWhiteSpace(value)) continue;
+							var decoded = Uri.UnescapeDataString(value.Trim());
+							if (DangerousProtocol.IsMatch(decoded) || !AllowedHrefScheme.IsMatch(decoded))
+							{
+								continue; // drop unsafe href
+							}
+							value = decoded;
+						}
 
-        var result = new List<string>();
-        var matches = AttributeRegex.Matches(attributesString);
+						if (name == "rel" || name == "target")
+						{
+							// We'll enforce our own values for links later.
+							continue;
+						}
 
-        foreach (Match match in matches)
-        {
-            var attrName = match.Groups[1].Value.ToLowerInvariant();
-            var attrValue = match.Groups[2].Value;
+						if (value is null)
+						{
+							sb.Append(' ').Append(name);
+						}
+						else
+						{
+							sb.Append(' ').Append(name).Append("=\"").Append(EscapeAttribute(value)).Append('"');
+						}
+					}
+				}
 
-            // Only include allowed attributes
-            if (!AllowedAttributes.Contains(attrName))
-                continue;
+				if (tagName == "a")
+				{
+					// Enforce target/rel on all links
+					sb.Append(" target=\"_blank\" rel=\"noopener noreferrer\"");
+				}
+				sb.Append('>');
+			}
+			lastIndex = m.Index + m.Length;
+		}
 
-            // Special handling for href attributes on anchor tags
-            if (tagName == "a" && attrName == "href")
-            {
-                var sanitizedHref = SanitizeHref(attrValue);
-                if (!string.IsNullOrEmpty(sanitizedHref))
-                {
-                    result.Add($"href=\"{sanitizedHref}\"");
-                }
-            }
-            else
-            {
-                result.Add($"{attrName}=\"{attrValue}\"");
-            }
-        }
+		if (lastIndex < working.Length)
+		{
+			sb.Append(working.AsSpan(lastIndex));
+		}
 
-        // For anchor tags with valid href, ensure target and rel are set
-        if (tagName == "a" && result.Any(attr => attr.StartsWith("href=")))
-        {
-            if (!result.Any(attr => attr.StartsWith("target=")))
-                result.Add("target=\"_blank\"");
-            
-            // Replace any existing rel with our secure version
-            result.RemoveAll(attr => attr.StartsWith("rel="));
-            result.Add("rel=\"noopener noreferrer\"");
-        }
+		// Remove any stray angle bracket script openings left (defense-in-depth)
+		var result = ScriptLike.Replace(sb.ToString(), string.Empty);
+		return result;
+	}
 
-        return result.Count > 0 ? " " + string.Join(" ", result) : "";
-    }
-
-    private string? SanitizeHref(string href)
-    {
-        if (string.IsNullOrWhiteSpace(href))
-            return null;
-
-        // Trim whitespace
-        href = href.Trim();
-
-        // Try to decode to catch encoded javascript: patterns
-        try
-        {
-            var decoded = Uri.UnescapeDataString(href);
-            if (decoded != href)
-                href = decoded;
-        }
-        catch
-        {
-            // Ignore decode errors
-        }
-
-        // Block javascript: protocol (case insensitive)
-        if (href.StartsWith("javascript:", StringComparison.OrdinalIgnoreCase))
-            return null;
-
-        // Only allow specific protocols
-        if (!LinkProtocolAllow.IsMatch(href))
-            return null;
-
-        return href;
-    }
+	private static string EscapeAttribute(string value)
+		=> value.Replace("\"", "&quot;");
 }
