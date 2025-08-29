@@ -46,7 +46,6 @@ public sealed class HtmlPolicySanitizer
 			// Append text between tags (escaped minimally: we trust original text except angle brackets already segmented)
 			if (m.Index > lastIndex)
 			{
-				// .NET Framework 4.7.2 compatibility: avoid AsSpan
 				sb.Append(working.Substring(lastIndex, m.Index - lastIndex));
 			}
 
@@ -82,14 +81,11 @@ public sealed class HtmlPolicySanitizer
 							string value = string.Empty;
 							if (valueGroup.Length != 0)
 							{
-								var eqIdx = valueGroup.IndexOf('=');
-								if (eqIdx >= 0 && eqIdx + 1 < valueGroup.Length)
+								int eqIdx = valueGroup.IndexOf('=');
+								value = valueGroup.Substring(eqIdx + 1).Trim();
+								if (value.Length > 1 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\'')))
 								{
-									value = valueGroup.Substring(eqIdx + 1).Trim();
-									if (value.Length > 1 && ((value[0] == '"' && value[value.Length - 1] == '"') || (value[0] == '\'' && value[value.Length - 1] == '\'')))
-									{
-										value = value.Substring(1, value.Length - 2);
-									}
+									value = value.Substring(1, value.Length - 2);
 								}
 							}
 
@@ -133,7 +129,6 @@ public sealed class HtmlPolicySanitizer
 
 		if (lastIndex < working.Length)
 		{
-			// Append remaining tail (no AsSpan for net472)
 			sb.Append(working.Substring(lastIndex));
 		}
 

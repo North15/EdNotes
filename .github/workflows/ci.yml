@@ -30,8 +30,9 @@ jobs:
       - name: Lint JS
         run: npm run lint
       - name: JS Tests
-        run: >-
-          node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage --coverageDirectory=artifacts/coverage/js || echo "JS tests failed" && exit 1
+        run: |
+          node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage --coverageDirectory=artifacts/coverage/js
+          if [ $? -ne 0 ]; then echo "JS tests failed" && exit 1; fi
       - name: JS Coverage Threshold
         run: node scripts/coverage-threshold.mjs
       - name: Upload JS Test Results (if any)
@@ -49,7 +50,7 @@ jobs:
       - name: Build
         run: dotnet build EdNotes.sln --configuration Release --no-restore
       - name: Test
-        run: dotnet test tests/unit/EdNotes.RichText.Tests.csproj --no-build --logger trx --collect:"XPlat Code Coverage" --results-directory artifacts/test-results/dotnet
+        run: dotnet test tests/unit/EdNotes.RichText.Tests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory artifacts/test-results/dotnet
       - name: Upload .NET Test Results
         if: always() && hashFiles('artifacts/test-results/dotnet/**') != ''
         uses: actions/upload-artifact@v4
@@ -90,8 +91,10 @@ jobs:
       - name: Coverage Summary
         if: always()
         run: |
-          echo "JS coverage files:" && dir artifacts\coverage\js
-          echo "DotNet coverage:" && dir artifacts\coverage 2>nul || echo "No dotnet coverage file"
+          echo "JS coverage files:"
+          if [ -d artifacts/coverage/js ]; then ls artifacts/coverage/js; else echo "No JS coverage"; fi
+          echo "DotNet coverage:"
+          if [ -f artifacts/coverage/dotnet.cobertura.xml ]; then echo "Found dotnet coverage file"; else echo "No dotnet coverage file"; fi
       - name: Coverage Badge Prep (JS)
         if: success() && runner.os == 'Linux'
         run: |
