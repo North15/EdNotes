@@ -88,11 +88,12 @@ jobs:
           path: artifacts/coverage
       - name: Coverage Summary
         if: always()
-        run: |
-          echo "JS coverage files:"
-          if [ -d artifacts/coverage/js ]; then ls artifacts/coverage/js; else echo "No JS coverage"; fi
-          echo "DotNet coverage:"
-          if [ -f artifacts/coverage/dotnet.cobertura.xml ]; then echo "Found dotnet coverage file"; else echo "No dotnet coverage file"; fi
+        run: >-
+          node -e "const fs=require('fs');
+          if(fs.existsSync('artifacts/coverage/js')){console.log('JS coverage files:');
+            for(const f of fs.readdirSync('artifacts/coverage/js')) console.log(' - '+f);
+          } else console.log('No JS coverage');
+          if(fs.existsSync('artifacts/coverage/dotnet.cobertura.xml')) console.log('DotNet coverage: Found dotnet coverage file'); else console.log('DotNet coverage: No dotnet coverage file');"
       - name: Coverage Badge Prep (JS)
         if: success() && runner.os == 'Linux'
         run: |
