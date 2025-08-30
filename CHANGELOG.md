@@ -11,6 +11,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 - Implemented server `HtmlPolicySanitizer` (allowlist enforcement + link protocol policy parity with client normalizer).
 - Performance regression gate step in CI (baseline 0.60 ms/block @ 20% tolerance).
 - Sanitizer edge-case tests (encoded / obfuscated javascript: schemes, attribute stripping, tag allowlist validation).
+- Extensive JavaScript test coverage expansion: toolbar command execution (block/list/link/task), paste normalization & link policy enforcement, history trimming & limit, autosave + export behaviors, accessibility shortcuts & live region announcements, task list defaults, list indent/outdent mechanics.
+- Shared JS test utilities and TextEncoder/TextDecoder polyfill setup for stable jsdom execution.
 
 ### Fixed (0.2.1)
 
@@ -19,6 +21,8 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 ### Internal (0.2.1)
 
 - Hardened CI artifact upload steps (conditional uploads, directory prep, xplat coverage extract).
+- Unified test harness refactor replacing ad-hoc jsdom bootstrapping with helper (`tests/js/test-utils.mjs`), raising JS coverage to ~80% statements / ~72% branches.
+- Removed unstable synthetic history batching micro-test (logic already covered by higher-level history tests); added selection bookmark invalidation and deep style/script stripping edge tests instead.
 
 ## [0.2.0] - 2025-08-29
 

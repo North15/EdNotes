@@ -1,32 +1,15 @@
 import { strict as assert } from 'node:assert';
-import { JSDOM } from 'jsdom';
-import path from 'node:path';
-import { pathToFileURL } from 'node:url';
-
-let now=0; const perf={ now: ()=> now };
-const dom = new JSDOM(`<!DOCTYPE html><textarea id="t1"></textarea>`, { url:'http://localhost/' });
-global.window=dom.window; global.document=dom.window.document; global.performance=perf; global.NodeFilter=dom.window.NodeFilter; global.Node=dom.window.Node;
-
-let autosaves=[];
-let editor, live;
-beforeAll(async ()=>{
-  const bundlePath = path.resolve('./src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.bundle.js');
-  await import(pathToFileURL(bundlePath).href);
-  // Inject fake setInterval to control autosave
-  const fakeIntervals=[];
-  function fakeSetInterval(fn, ms){ const id=fakeIntervals.length; fakeIntervals.push({ fn, ms, elapsed:0 }); return id; }
-  window.RichText.attach('#t1', { autosaveIntervalMs: 2000, onAutosave:v=> autosaves.push(v), _setInterval: fakeSetInterval });
-  editor = window.RichText._all()[0];
-  live = editor.root.querySelector('.rtx-live');
-  // expose tick helper
-  editor.__intervals = fakeIntervals;
+import { createEditor } from './test-utils.mjs';
+let autosaves=[], editor, live, now=0;
+beforeEach(()=>{
+  now=0; const realPerf=global.performance; global.performance={ now: ()=> now };
+  const fakeIntervals=[]; function fakeSetInterval(fn, ms){ const id=fakeIntervals.length; fakeIntervals.push({ fn, ms, elapsed:0 }); return id; }
+  editor = createEditor({ html:'<p></p>', options:{ autosaveIntervalMs:2000, onAutosave:v=> autosaves.push(v), _setInterval: fakeSetInterval } });
+  live = editor.root.querySelector('.rtx-live'); editor.__intervals=fakeIntervals; editor.__restorePerf=()=>{ global.performance=realPerf; };
 });
+afterEach(()=>{ if(editor && editor.__restorePerf) editor.__restorePerf(); });
 
-function tick(ms){
-  // Advance time and run any intervals crossing boundary
-  editor.__intervals.forEach(iv=>{ iv.elapsed+=ms; if(iv.elapsed>=iv.ms){ iv.elapsed=0; iv.fn(); } });
-  now += ms;
-}
+function tick(ms){ editor.__intervals.forEach(iv=>{ iv.elapsed+=ms; if(iv.elapsed>=iv.ms){ iv.elapsed=0; iv.fn(); } }); now += ms; }
 
 test('autosave triggers after interval when content changes', ()=>{
   autosaves.length=0;
