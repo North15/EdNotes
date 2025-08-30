@@ -1,6 +1,6 @@
 // Primary public bundle entry for EdNotes Rich Text Editor.
 // Exports all public API symbols (previous legacy yourorg bundle removed in 0.2.0).
-import { EditorCore, CommandBus, markCommand } from './core/CommandBus.js';
+import { EditorCore, markCommand } from './core/CommandBus.js';
 import { enforceLinkPolicy } from './core/Schema.js';
 
 // Minimal facade replicating prior RichText export shape.
