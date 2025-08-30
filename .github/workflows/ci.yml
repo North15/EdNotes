@@ -76,14 +76,8 @@ jobs:
           node -e "const fs=require('fs'),path=require('path');function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{const p=path.join(d,e.name);return e.isDirectory()?walk(p):(p.endsWith('.cobertura.xml')?[p]:[]);});}if(!fs.existsSync('artifacts/test-results/dotnet')){console.log('No dotnet test results dir');process.exit(0);}const files=walk('artifacts/test-results/dotnet');if(files.length){fs.mkdirSync('artifacts/coverage',{recursive:true});fs.copyFileSync(files[0],'artifacts/coverage/dotnet.cobertura.xml');console.log('Copied coverage from',files[0]);}else{console.log('No cobertura file found');}"
 
       - name: .NET Coverage Threshold
-        if: success()
-        run: >-
-          node -e "const fs=require('fs');const min=parseFloat(process.env.DOTNET_COV_MIN||'70');
-          const p='artifacts/coverage/dotnet.cobertura.xml';
-          if(!fs.existsSync(p)){console.error('Error: dotnet.cobertura.xml not found');process.exit(1);} 
-          const xml=fs.readFileSync(p,'utf8');const m=xml.match(/line-rate=\"([0-9.]+)\"/);
-          if(!m){console.error('Error: line-rate not found in coverage file');process.exit(1);} 
-          const pct=parseFloat(m[1])*100; if(pct < min){console.error(`Coverage ${pct.toFixed(2)}% < min ${min}%`);process.exit(1);} else {console.log(`Coverage ${pct.toFixed(2)}% (min ${min}%)`);}";
+  if: success()
+  run: node scripts/dotnet-coverage-threshold.mjs
 
       - name: Upload .NET Coverage
         if: always() && hashFiles('artifacts/coverage/dotnet.cobertura.xml') != ''
