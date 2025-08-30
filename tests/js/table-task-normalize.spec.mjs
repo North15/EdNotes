@@ -1,18 +1,6 @@
 import { strict as assert } from 'node:assert';
-import { JSDOM } from 'jsdom';
-import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { normalize } from '../../src/EdNotes.RichText/wwwroot/editor/core/Normalizer.js';
-
-const dom = new JSDOM(`<!DOCTYPE html><textarea id="t1"></textarea>`, { url:'http://localhost/' });
-global.window = dom.window; global.document = dom.window.document; global.performance = { now: (()=>{ let t=0; return ()=> (t+=50); })() };
-global.NodeFilter = dom.window.NodeFilter; global.Node = dom.window.Node;
-
-beforeAll(async ()=>{
-  const bundlePath = path.resolve('./src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.bundle.js');
-  await import(pathToFileURL(bundlePath).href);
-  window.RichText.attach('#t1');
-});
+import { createEditor, selectAll } from './test-utils.mjs';
 
 test('table stray rows moved into tbody and disallowed removed', ()=>{
   const wrap=document.createElement('div');
@@ -26,12 +14,9 @@ test('table stray rows moved into tbody and disallowed removed', ()=>{
 });
 
 test('task list command sets defaults', ()=>{
-  const inst = window.RichText._all()[0];
-  inst.content.innerHTML='<p>Task One</p>';
-  const p=inst.content.querySelector('p');
-  const sel=window.getSelection(); const r=document.createRange(); r.setStart(p.firstChild,0); r.setEnd(p.firstChild,p.firstChild.textContent.length); sel.removeAllRanges(); sel.addRange(r);
-  const btn=[...inst.root.querySelectorAll('button')].find(b=> b.dataset.cmd==='list:task');
-  btn.click();
+  const inst = createEditor({ html:'<p>Task One</p>' });
+  const p=inst.content.querySelector('p'); selectAll(p);
+  inst.bus.exec('list:task');
   const ul=inst.content.querySelector('ul[data-list="task"]');
   assert.ok(ul,'Task list created');
   const li=ul.querySelector('li');
