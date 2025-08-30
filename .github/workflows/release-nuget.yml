@@ -42,12 +42,18 @@ jobs:
       - name: Build
         run: dotnet build EdNotes.sln -c Release --no-restore
       - name: .NET Tests
-  run: dotnet test tests/unit/EdNotes.RichText.Tests.csproj -c Release --no-build
+        run: dotnet test tests/unit/EdNotes.RichText.Tests.csproj -c Release --no-build
       - name: Pack
         run: dotnet pack src/EdNotes.RichText/EdNotes.RichText.csproj -c Release -p:PackageVersion=${{ steps.ver.outputs.version }} -o ./artifacts
       - name: Publish (NuGet)
         if: success()
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: >-
-          node -e "const k=process.env.NUGET_API_KEY; if(!k){console.log('NUGET_API_KEY secret not set; skipping publish.');process.exit(0);} process.exit(require('child_process').spawnSync('dotnet',['nuget','push','artifacts/*.nupkg','--api-key',k,'--source','https://api.nuget.org/v3/index.json','--skip-duplicate'],{stdio:'inherit',shell:true}).status);"
+        run: |
+          node - <<'EOF'
+          const k=process.env.NUGET_API_KEY;
+          if(!k){ console.log('NUGET_API_KEY secret not set; skipping publish.'); process.exit(0);} 
+          const {spawnSync}=require('child_process');
+          const r = spawnSync('dotnet',['nuget','push','artifacts/*.nupkg','--api-key',k,'--source','https://api.nuget.org/v3/index.json','--skip-duplicate'],{stdio:'inherit',shell:true});
+          process.exit(r.status);
+          EOF
