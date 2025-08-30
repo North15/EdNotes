@@ -47,14 +47,14 @@ jobs:
         if: always() && hashFiles('artifacts/test-results/js/**') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: js-test-results
+          name: js-test-results-${{ runner.os }}
           path: artifacts/test-results/js
 
       - name: Upload JS Coverage
         if: always() && hashFiles('artifacts/coverage/js/**') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: js-coverage
+          name: js-coverage-${{ runner.os }}
           path: artifacts/coverage/js
 
       - name: Build
@@ -67,7 +67,7 @@ jobs:
         if: always() && hashFiles('artifacts/test-results/dotnet/**') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: dotnet-test-results
+          name: dotnet-test-results-${{ runner.os }}
           path: artifacts/test-results/dotnet
 
       - name: Extract .NET Coverage
@@ -89,7 +89,7 @@ jobs:
         if: always() && hashFiles('artifacts/coverage/dotnet.cobertura.xml') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: dotnet-coverage
+          name: dotnet-coverage-${{ runner.os }}
           path: artifacts/coverage
 
       - name: Coverage Summary
@@ -166,5 +166,5 @@ jobs:
       - name: Upload Package
         uses: actions/upload-artifact@v4
         with:
-          name: nuget-package
+          name: nuget-package-${{ runner.os }}
           path: artifacts/*.nupkg
