@@ -99,8 +99,38 @@ jobs:
         if: success() && runner.os == 'Linux'
         run: |
           mkdir -p artifacts/badges
-          node -e "const fs=require('fs');const sum=JSON.parse(fs.readFileSync('artifacts/coverage/js/coverage-summary.json','utf8'));const pct=sum.total.lines.pct;const color=pct>90?'brightgreen':pct>80?'green':pct>70?'yellowgreen':pct>60?'yellow':'orange';fs.writeFileSync('artifacts/badges/js-coverage.svg',`<svg xmlns='http://www.w3.org/2000/svg' width='140' height='20'><rect rx='3' width='140' height='20' fill='#555'/><rect rx='3' x='70' width='70' height='20' fill='${color}'/><g fill='#fff' font-family='Verdana' font-size='11'><text x='35' y='14' text-anchor='middle'>js cov</text><text x='105' y='14' text-anchor='middle'>${pct}%</text></g></svg>`);"
-          node -e "const fs=require('fs');const xml=fs.readFileSync('artifacts/coverage/dotnet.cobertura.xml','utf8');const m=xml.match(/line-rate=\"([0-9.]+)\"/);if(m){const pct=(parseFloat(m[1])*100).toFixed(2);const color=pct>90?'brightgreen':pct>80?'green':pct>70?'yellowgreen':pct>60?'yellow':'orange';fs.writeFileSync('artifacts/badges/dotnet-coverage.svg',`<svg xmlns='http://www.w3.org/2000/svg' width='170' height='20'><rect rx='3' width='170' height='20' fill='#555'/><rect rx='3' x='90' width='80' height='20' fill='${color}'/><g fill='#fff' font-family='Verdana' font-size='11'><text x='45' y='14' text-anchor='middle'>dotnet cov</text><text x='130' y='14' text-anchor='middle'>${pct}%</text></g></svg>`);}"
+          node - <<'EOF'
+          const fs=require('fs');
+          const sum=JSON.parse(fs.readFileSync('artifacts/coverage/js/coverage-summary.json','utf8'));
+          const pct=sum.total.lines.pct;
+            const color=pct>90?'brightgreen':pct>80?'green':pct>70?'yellowgreen':pct>60?'yellow':'orange';
+          const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='140' height='20'>"+
+            "<rect rx='3' width='140' height='20' fill='#555'/>"+
+            "<rect rx='3' x='70' width='70' height='20' fill='"+color+"'/>"+
+            "<g fill='#fff' font-family='Verdana' font-size='11'>"+
+            "<text x='35' y='14' text-anchor='middle'>js cov</text>"+
+            "<text x='105' y='14' text-anchor='middle'>"+pct+"%</text>"+
+            "</g></svg>";
+          fs.writeFileSync('artifacts/badges/js-coverage.svg', svg);
+          EOF
+          node - <<'EOF'
+          const fs=require('fs');
+          if(!fs.existsSync('artifacts/coverage/dotnet.cobertura.xml')) process.exit(0);
+          const xml=fs.readFileSync('artifacts/coverage/dotnet.cobertura.xml','utf8');
+          const m=xml.match(/line-rate="([0-9.]+)"/);
+          if(m){
+            const pct=(parseFloat(m[1])*100).toFixed(2);
+            const color=pct>90?'brightgreen':pct>80?'green':pct>70?'yellowgreen':pct>60?'yellow':'orange';
+            const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='170' height='20'>"+
+              "<rect rx='3' width='170' height='20' fill='#555'/>"+
+              "<rect rx='3' x='90' width='80' height='20' fill='"+color+"'/>"+
+              "<g fill='#fff' font-family='Verdana' font-size='11'>"+
+              "<text x='45' y='14' text-anchor='middle'>dotnet cov</text>"+
+              "<text x='130' y='14' text-anchor='middle'>"+pct+"%</text>"+
+              "</g></svg>";
+            fs.writeFileSync('artifacts/badges/dotnet-coverage.svg', svg);
+          }
+          EOF
       - name: Performance Benchmark
         if: success() && runner.os == 'Linux'
         run: node scripts/bench-normalize.mjs 800 > artifacts/benchmark-normalize.json
