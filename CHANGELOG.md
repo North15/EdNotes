@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
+## [0.2.5] - 2025-08-29
+
+### CI Fixes
+
+- Release workflow YAML indentation for `.NET Tests` step (syntax error at line 46 resolved).
+- Converted publish one-liner to readable heredoc script section for clarity/maintainability.
+
+### Documentation
+
+- Added explicit version badge and updated README install snippet to latest version.
+
+### Internal Notes
+
+- No library code changes; packaging & workflow polish only.
+
 ## [0.2.4] - 2025-08-29
 
 ### Fixed (CI)
