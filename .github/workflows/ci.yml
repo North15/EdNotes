@@ -4,6 +4,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
 jobs:
   build-test-pack:
     strategy:
@@ -12,53 +13,68 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
       - name: Prepare Artifact Directories
         run: node -e "['artifacts/test-results/js','artifacts/test-results/dotnet','artifacts/coverage/js','artifacts/coverage','artifacts/badges'].forEach(d=>require('fs').mkdirSync(d,{recursive:true}));"
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
       - name: Restore
         run: dotnet restore EdNotes.sln
+
       - name: Install JS deps
         run: npm ci
+
       - name: Lint JS
         run: npm run lint
+
       - name: JS Tests
-  run: node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage --coverageDirectory=artifacts/coverage/js
+        run: node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage --coverageDirectory=artifacts/coverage/js
+
       - name: JS Coverage Threshold
         run: node scripts/coverage-threshold.mjs
+
       - name: Upload JS Test Results (if any)
         if: always() && hashFiles('artifacts/test-results/js/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: js-test-results
           path: artifacts/test-results/js
+
       - name: Upload JS Coverage
         if: always() && hashFiles('artifacts/coverage/js/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: js-coverage
           path: artifacts/coverage/js
+
       - name: Build
         run: dotnet build EdNotes.sln --configuration Release --no-restore
+
       - name: Test
         run: dotnet test tests/unit/EdNotes.RichText.Tests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory artifacts/test-results/dotnet
+
       - name: Upload .NET Test Results
         if: always() && hashFiles('artifacts/test-results/dotnet/**') != ''
         uses: actions/upload-artifact@v4
         with:
           name: dotnet-test-results
           path: artifacts/test-results/dotnet
+
       - name: Extract .NET Coverage
         if: always()
         run: |
           node -e "const fs=require('fs'),path=require('path');function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{const p=path.join(d,e.name);return e.isDirectory()?walk(p):(p.endsWith('.cobertura.xml')?[p]:[]);});}if(!fs.existsSync('artifacts/test-results/dotnet')){console.log('No dotnet test results dir');process.exit(0);}const files=walk('artifacts/test-results/dotnet');if(files.length){fs.mkdirSync('artifacts/coverage',{recursive:true});fs.copyFileSync(files[0],'artifacts/coverage/dotnet.cobertura.xml');console.log('Copied coverage from',files[0]);}else{console.log('No cobertura file found');}"
+
       - name: .NET Coverage Threshold
         if: success()
         run: >-
@@ -67,13 +83,15 @@ jobs:
           if(!fs.existsSync(p)){console.error('Error: dotnet.cobertura.xml not found');process.exit(1);} 
           const xml=fs.readFileSync(p,'utf8');const m=xml.match(/line-rate=\"([0-9.]+)\"/);
           if(!m){console.error('Error: line-rate not found in coverage file');process.exit(1);} 
-          const pct=parseFloat(m[1])*100; if(pct < min){console.error(`Coverage ${pct.toFixed(2)}% < min ${min}%`);process.exit(1);} else {console.log(`Coverage ${pct.toFixed(2)}% (min ${min}%)`);}"
+          const pct=parseFloat(m[1])*100; if(pct < min){console.error(`Coverage ${pct.toFixed(2)}% < min ${min}%`);process.exit(1);} else {console.log(`Coverage ${pct.toFixed(2)}% (min ${min}%)`);}";
+
       - name: Upload .NET Coverage
         if: always() && hashFiles('artifacts/coverage/dotnet.cobertura.xml') != ''
         uses: actions/upload-artifact@v4
         with:
           name: dotnet-coverage
           path: artifacts/coverage
+
       - name: Coverage Summary
         if: always()
         run: >-
@@ -82,6 +100,7 @@ jobs:
             for(const f of fs.readdirSync('artifacts/coverage/js')) console.log(' - '+f);
           } else console.log('No JS coverage');
           if(fs.existsSync('artifacts/coverage/dotnet.cobertura.xml')) console.log('DotNet coverage: Found dotnet coverage file'); else console.log('DotNet coverage: No dotnet coverage file');"
+
       - name: Coverage Badge Prep (JS)
         if: success() && runner.os == 'Linux'
         run: |
@@ -122,23 +141,28 @@ jobs:
             fs.writeFileSync('artifacts/badges/dotnet-coverage.svg', svg);
           }
           EOF
+
       - name: Performance Benchmark
         if: success() && runner.os == 'Linux'
         run: node scripts/bench-normalize.mjs 800 > artifacts/benchmark-normalize.json
+
       - name: Performance Regression Gate
         if: success() && runner.os == 'Linux'
         env:
           PERF_BASELINE_MS_PER_BLOCK: 0.60
           PERF_TOLERANCE_PCT: 20
         run: node scripts/perf-regression-check.mjs
+
       - name: Upload Coverage Badges
         if: always() && runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-badges
           path: artifacts/badges
+
       - name: Pack
         run: dotnet pack src/EdNotes.RichText/EdNotes.RichText.csproj -c Release -o ./artifacts
+
       - name: Upload Package
         uses: actions/upload-artifact@v4
         with:
