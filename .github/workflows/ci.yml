@@ -61,25 +61,13 @@ jobs:
           node -e "const fs=require('fs'),path=require('path');function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{const p=path.join(d,e.name);return e.isDirectory()?walk(p):(p.endsWith('.cobertura.xml')?[p]:[]);});}if(!fs.existsSync('artifacts/test-results/dotnet')){console.log('No dotnet test results dir');process.exit(0);}const files=walk('artifacts/test-results/dotnet');if(files.length){fs.mkdirSync('artifacts/coverage',{recursive:true});fs.copyFileSync(files[0],'artifacts/coverage/dotnet.cobertura.xml');console.log('Copied coverage from',files[0]);}else{console.log('No cobertura file found');}"
       - name: .NET Coverage Threshold
         if: success()
-        run: |
-          echo "Parsing .NET coverage threshold"
-          if [ ! -f "artifacts/coverage/dotnet.cobertura.xml" ]; then
-            echo "Error: dotnet.cobertura.xml not found"
-            exit 1
-          fi
-          COVERAGE=$(grep 'line-rate=' artifacts/coverage/dotnet.cobertura.xml | head -1 | awk -F'"' '{print $2}')
-          if [ -z "$COVERAGE" ]; then
-            echo "Error: line-rate not found in coverage file"
-            exit 1
-          fi
-          PCT=$(awk "BEGIN {print $COVERAGE*100}")
-          MIN=${DOTNET_COV_MIN:-70}
-          if (( $(echo "$PCT < $MIN" | bc -l) )); then
-            echo "Coverage $PCT% < min $MIN%"
-            exit 1
-          else
-            echo "Coverage $PCT%"
-          fi
+        run: >-
+          node -e "const fs=require('fs');const min=parseFloat(process.env.DOTNET_COV_MIN||'70');
+          const p='artifacts/coverage/dotnet.cobertura.xml';
+          if(!fs.existsSync(p)){console.error('Error: dotnet.cobertura.xml not found');process.exit(1);} 
+          const xml=fs.readFileSync(p,'utf8');const m=xml.match(/line-rate=\"([0-9.]+)\"/);
+          if(!m){console.error('Error: line-rate not found in coverage file');process.exit(1);} 
+          const pct=parseFloat(m[1])*100; if(pct < min){console.error(`Coverage ${pct.toFixed(2)}% < min ${min}%`);process.exit(1);} else {console.log(`Coverage ${pct.toFixed(2)}% (min ${min}%)`);}"
       - name: Upload .NET Coverage
         if: always() && hashFiles('artifacts/coverage/dotnet.cobertura.xml') != ''
         uses: actions/upload-artifact@v4
@@ -98,10 +86,10 @@ jobs:
         if: success() && runner.os == 'Linux'
         run: |
           mkdir -p artifacts/badges
-          if [ ! -f artifacts/coverage/js/coverage-summary.json ]; then echo 'JS coverage summary missing; skipping JS badge.'; else
           node - <<'EOF'
           const fs=require('fs');
           try {
+            if(!fs.existsSync('artifacts/coverage/js/coverage-summary.json')) { console.log('JS coverage summary missing; skipping JS badge.'); process.exit(0);} 
             const sum=JSON.parse(fs.readFileSync('artifacts/coverage/js/coverage-summary.json','utf8'));
             const pct=sum.total.lines.pct;
             const color=pct>90?'brightgreen':pct>80?'green':pct>70?'yellowgreen':pct>60?'yellow':'orange';
@@ -116,7 +104,6 @@ jobs:
             console.log('Wrote JS coverage badge');
           } catch(e){ console.log('Skipping JS badge due to error:', e.message); }
           EOF
-          fi
           node - <<'EOF'
           const fs=require('fs');
           if(!fs.existsSync('artifacts/coverage/dotnet.cobertura.xml')) process.exit(0);
