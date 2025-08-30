@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
+## [0.2.4] - 2025-08-29
+
+### Fixed (CI)
+
+- Converted inline PowerShell-problematic .NET coverage threshold one-liner into script (`dotnet-coverage-threshold.mjs`) to eliminate regex escaping/parser error.
+- Corrected indentation of `.NET Coverage Threshold` step after script migration.
+- Added OS-specific suffixes to artifact names to avoid 409 conflicts across matrix jobs.
+- Finalized JS Tests step indentation and structure for YAML validity.
+- Release workflow: ensured tests run in Release configuration & removed bash conditional for publish gating (now Node-based logic).
+
+### Internal
+
+- Stability-focused maintenance release; no runtime library code changes.
+
 ## [0.2.1] - 2025-08-29
 
 ### Added (0.2.1)
