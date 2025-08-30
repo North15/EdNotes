@@ -2,6 +2,7 @@
 
 ![CI](https://github.com/North15/EdNotes/actions/workflows/ci.yml/badge.svg)
 ![NuGet](https://img.shields.io/nuget/v/EdNotes.RichText.svg)
+![Package Version](https://img.shields.io/badge/version-0.2.4-informational.svg)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/EdNotes.RichText.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -15,10 +16,10 @@ Bundle filename is `ednotes.richtext.bundle.js` (legacy `yourorg.richtext.bundle
 
 ## Installation
 
-NuGet (current version 0.2.1):
+NuGet (current version 0.2.4):
 
 ```bash
-dotnet add package EdNotes.RichText --version 0.2.1
+dotnet add package EdNotes.RichText --version 0.2.4
 ```
 
 Add static script reference:
