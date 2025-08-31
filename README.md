@@ -47,8 +47,8 @@ Ensure the package `IncludeAssets` brings `contentFiles` (default). If you use a
 
 ```html
 <textarea id="notes"></textarea>
-<script src="~/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js"></script>
-<script>
+<script type="module">
+	import { RichText } from '/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js';
 	RichText.attach('#notes', {
 		historyLimit: 100,
 		onChange: html => console.log('changed', html),
