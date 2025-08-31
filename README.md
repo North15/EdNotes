@@ -28,9 +28,17 @@ Add static script reference:
 
 `_content` path is automatically mapped for static web assets from Razor Class Libraries.
 
+Choose ONE pattern:
+
+Module (recommended):
+
 ```html
-<script src="~/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js"></script>
-```
+<script type="module">
+import { RichText } from '/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js';
+RichText.attach('#notes');
+historyLimit: 100,
+
+Do not include both a classic and a module import for the same bundle.
 
 ### Classic MVC 5 / .NET Framework 4.7.2
 
@@ -48,19 +56,19 @@ Ensure the package `IncludeAssets` brings `contentFiles` (default). If you use a
 ```html
 <textarea id="notes"></textarea>
 <script type="module">
-	import { RichText } from '/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js';
-	RichText.attach('#notes', {
-		historyLimit: 100,
-		onChange: html => console.log('changed', html),
-		autosaveIntervalMs: 5000,
-		onAutosave: html => saveDraft(html),
-		promptLink: () => window.prompt('Enter URL','https://')
-	});
-	// Later
-	RichText.undo();
-	RichText.redo();
-	const [plain] = RichText.exportAllPlain();
-	const [md] = RichText.exportAllMarkdown();
+import { RichText } from '/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js';
+RichText.attach('#notes', {
+ historyLimit: 100,
+ onChange: html => console.log('changed', html),
+ autosaveIntervalMs: 5000,
+ onAutosave: html => saveDraft(html),
+ promptLink: () => window.prompt('Enter URL','https://')
+});
+// Later
+RichText.undo();
+RichText.redo();
+const [plain] = RichText.exportAllPlain();
+const [md] = RichText.exportAllMarkdown();
 </script>
 ```
 

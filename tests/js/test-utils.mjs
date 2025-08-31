@@ -12,7 +12,14 @@ export function createEditor({ html='<p></p>', options={} }={}){
 export function selectAll(node){
   const sel=document.getSelection(); if(!sel) return;
   const r=document.createRange();
-  if(node.firstChild){ r.setStart(node.firstChild,0); r.setEnd(node.firstChild,node.firstChild.textContent.length); }
-  else { r.setStart(node,0); r.setEnd(node, node.childNodes.length); }
+  if(node.firstChild && node.firstChild.nodeType===3){
+    r.setStart(node.firstChild,0);
+    r.setEnd(node.firstChild,node.firstChild.textContent.length);
+  } else if(node.firstChild){
+    // If firstChild is element choose its contents
+    r.selectNodeContents(node);
+  } else {
+    r.setStart(node,0); r.setEnd(node,0);
+  }
   sel.removeAllRanges(); sel.addRange(r);
 }

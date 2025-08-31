@@ -43,7 +43,12 @@ function mountToolbar(editor){
 
 export const RichText = {
 	attach(selector, options={}){
-		document.querySelectorAll(selector).forEach(t=>{
+		const nodes = document.querySelectorAll(selector);
+		if(nodes.length===0){
+			console.warn('[EdNotes.RichText] No elements matched selector', selector);
+			return 0;
+		}
+		nodes.forEach(t=>{
 			if(t._rtxAttached) return; t._rtxAttached=true;
 			const ed = new EditorCore(t, options);
 			ed.bus.register('strong', markCommand('strong'));
@@ -59,8 +64,11 @@ export const RichText = {
 			ed.bus.register('link:remove', linkRemoveCommand());
 			ed.bus.register('list:task', taskListCommand());
 			mountToolbar(ed);
+			ed.root.setAttribute('data-rtx-attached','true');
+			t.setAttribute('data-rtx-source','true');
 			instances.add(ed);
 		});
+		return nodes.length;
 	},
 	triggerSave(){ instances.forEach(i=> i.triggerSave()); },
 	undo(){ instances.forEach(i=> i.undo()); },
@@ -70,6 +78,9 @@ export const RichText = {
 	enforceLinkPolicy,
 	_all
 };
+
+// Version injected manually (consider automated replacement in future build step)
+RichText.version = '0.2.6';
 
 function blockCommand(tag){
 	return (ed)=>{

@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.2.6] - 2025-08-31
+
+### Removed (0.2.6)
+
+- Entire `samples/` directory (legacy MVC5 & ASP.NET Core sample apps) removed from repo & solution to streamline `dotnet test` (eliminates non-test project VSTest target errors).
+
+### Added / Tests
+
+- New JS test suites: link add/remove & task list toggle, block/list command toggle, table & task list normalization scenarios.
+- Enhanced shared `selectAll` test helper to handle element nodes without direct text child (prevents `IndexSizeError`).
+
+### Fixed
+
+- Stabilized link removal test by ensuring selection anchored inside `<a>` element before `link:remove` execution.
+- Adjusted list/task toggle tests to reflect history design (block/list conversions not currently undo-tracked unless wrapped in transaction).
+
+### Internal (0.2.6)
+
+- Version bump only; no runtime editor command logic changes besides test helper.
+- Maintains ~78% JS statement coverage; groundwork laid for future loader & CommandBus branch coverage.
+
+
 All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
@@ -29,7 +51,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 - Finalized JS Tests step indentation and structure for YAML validity.
 - Release workflow: ensured tests run in Release configuration & removed bash conditional for publish gating (now Node-based logic).
 
-### Internal
+### Internal (0.2.4)
 
 - Stability-focused maintenance release; no runtime library code changes.
 
@@ -55,7 +77,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 ## [0.2.0] - 2025-08-29
 
-### Removed
+### Removed (0.2.0)
 
 - Legacy `yourorg.richtext.bundle.js` file (use `ednotes.richtext.bundle.js`).
 

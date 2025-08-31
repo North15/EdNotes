@@ -7,7 +7,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   <EnableDefaultContentItems>false</EnableDefaultContentItems>
   <PackageId>EdNotes.RichText</PackageId>
-  <Version>0.2.5</Version>
+  <Version>0.2.6</Version>
   <Authors>EdNotes</Authors>
     <Description>Secure JavaScript-only rich text editor (no media) for Razor (ASP.NET Core + MVC5). Strict schema; server-side sanitization authoritative.</Description>
   <PackageReadmeFile>README.md</PackageReadmeFile>
