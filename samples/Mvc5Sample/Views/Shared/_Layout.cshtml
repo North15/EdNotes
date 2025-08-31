@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>EdNotes MVC5 Sample</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'self'">
+  <link rel="stylesheet" href="~/Scripts/EdNotes.RichText/editor/editor.css" />
+</head>
+<body>
+  <header><h1>EdNotes MVC5 Sample</h1></header>
+  <div class="content">
+    @RenderBody()
+  </div>
+  <script type="module" src="~/Scripts/EdNotes.RichText/editor/ednotes.richtext.bundle.js"></script>
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      window.EdNotes = window.EdNotes || window.RichText;
+      window.EdNotes.attach('#rte1');
+      document.getElementById('saveBtn').addEventListener('click', () => {
+        window.EdNotes.triggerSave('#rte1');
+        alert('Saved value length: ' + document.getElementById('rte1').value.length);
+      });
+    });
+  </script>
+</body>
+</html>

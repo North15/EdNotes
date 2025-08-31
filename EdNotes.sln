@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdNotes.RichText", "src\EdN
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdNotes.RichText.Tests", "tests\unit\EdNotes.RichText.Tests.csproj", "{5F7B1D2B-1493-4D61-AF86-CC7F0A9FB7C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mvc5Sample", "samples\Mvc5Sample\Mvc5Sample.csproj", "{F3C7D8BE-1111-4B22-ABCD-1234567890AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{5F7B1D2B-1493-4D61-AF86-CC7F0A9FB7C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F7B1D2B-1493-4D61-AF86-CC7F0A9FB7C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F7B1D2B-1493-4D61-AF86-CC7F0A9FB7C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3C7D8BE-1111-4B22-ABCD-1234567890AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3C7D8BE-1111-4B22-ABCD-1234567890AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3C7D8BE-1111-4B22-ABCD-1234567890AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3C7D8BE-1111-4B22-ABCD-1234567890AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -40,6 +46,7 @@ Global
 		{50BAE4CD-2B6D-ADB5-3BCC-086CEDBEBB34} = {5D20AA90-6969-D8BD-9DCD-8634F4692FDA}
 		{BA849A27-9E99-579F-DB19-3B7DE3A42460} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{5F7B1D2B-1493-4D61-AF86-CC7F0A9FB7C6} = {1210F6C9-5D80-4A1C-8E80-8A4D6D5E4EFC}
+		{F3C7D8BE-1111-4B22-ABCD-1234567890AB} = {5D20AA90-6969-D8BD-9DCD-8634F4692FDA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EAF77A5C-50BC-4F64-B324-C89FEBA6E919}
