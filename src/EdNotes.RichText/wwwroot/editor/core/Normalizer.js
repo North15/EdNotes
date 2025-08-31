@@ -27,6 +27,10 @@ export function normalize(root){
     if(tag === 'ul' && el.getAttribute('data-list') === 'task'){
       el.querySelectorAll('li').forEach(li=>{ if(!li.hasAttribute('data-checked')) li.setAttribute('data-checked','false'); });
     }
+    if(tag === 'span' && el.classList.contains('math')){
+      // Allow math spans but sanitize content
+      el.textContent = el.textContent.replace(/[<>&]/g, ''); // Basic sanitization
+    }
     if(tag === 'table'){
       // Ensure structure: table>thead?+tbody? allowed; move stray tr into tbody
       const rows=[...el.children].filter(c=> c.tagName && c.tagName.toLowerCase()==='tr');

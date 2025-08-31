@@ -247,5 +247,8 @@ export class EditorCore {
     }
     return out.join('\n\n');
   }
+  exportHTML(){
+    return this.content.innerHTML;
+  }
   dispose(){ if(this._autosaveTimer) clearInterval(this._autosaveTimer); }
 }

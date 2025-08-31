@@ -1,6 +1,24 @@
 # Changelog
 
-## [0.2.6] - 2025-08-31
+## [0.3.0] - 2025-08-31
+
+### Added
+
+- **Math Equation Support**: Integrated KaTeX for LaTeX rendering in `<span class="math">` elements. Added `math:add` command with toolbar button (∑).
+- **Mobile Responsiveness**: Improved CSS for tablets/phones with larger buttons, wrapped toolbar, and 16px font to prevent zoom.
+- **Education-Friendly Themes**: Added `.theme-high-contrast` and `.theme-dyslexia` CSS classes for accessibility.
+- **HTML Export**: New `exportHTML()` method and `RichText.exportAllHTML()` API for full HTML output.
+- **Test Coverage**: Added tests for loader script dynamic import logic.
+
+### Changed
+
+- Extended schema to allow `span` with `class` attribute for math elements.
+- Updated Normalizer to sanitize math content and prevent XSS in LaTeX input.
+
+### Internal
+
+- Bumped version to 0.3.0.
+- Maintained security-first approach with math content sanitization.
 
 ### Removed (0.2.6)
 
@@ -81,11 +99,11 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 
 - Legacy `yourorg.richtext.bundle.js` file (use `ednotes.richtext.bundle.js`).
 
-### Added (initial)
+### Added (0.2.0)
 
 - Initial `CHANGELOG.md`.
 
-### Changed
+### Changed (0.2.0)
 
 - Sample app updated to reference new bundle and static asset path `_content/EdNotes.RichText/...`.
 

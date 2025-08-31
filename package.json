@@ -14,8 +14,10 @@
     "outputName": "junit.xml"
   },
   "jest": {
-  "testEnvironment": "jsdom",
-  "setupFiles": ["<rootDir>/tests/js/setup-env.mjs"],
+    "testEnvironment": "jsdom",
+    "setupFiles": [
+      "<rootDir>/tests/js/setup-env.mjs"
+    ],
     "reporters": [
       "default",
       [
@@ -39,5 +41,8 @@
     "jest-environment-jsdom": "29.7.0",
     "jest-junit": "16.0.0",
     "jsdom": "22.1.0"
+  },
+  "dependencies": {
+    "katex": "^0.16.22"
   }
 }

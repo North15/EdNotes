@@ -2,6 +2,7 @@
 // Exports all public API symbols (previous legacy yourorg bundle removed in 0.2.0).
 import { EditorCore, markCommand } from './core/CommandBus.js';
 import { enforceLinkPolicy } from './core/Schema.js';
+import katex from 'katex';
 
 // Minimal facade replicating prior RichText export shape.
 const instances = new Set();
@@ -22,7 +23,8 @@ function mountToolbar(editor){
 		{ label:'1.', aria:'Numbered List', cmd:'list:ol', list:'ol' },
 		{ label:'🔗', aria:'Add Link', cmd:'link:add' },
 		{ label:'✖', aria:'Remove Link', cmd:'link:remove' },
-		{ label:'☑', aria:'Task List', cmd:'list:task' }
+		{ label:'☑', aria:'Task List', cmd:'list:task' },
+		{ label:'∑', aria:'Math Equation', cmd:'math:add' }
 	];
 	const btnEls=[];
 	buttons.forEach((b,i)=>{
@@ -63,6 +65,7 @@ export const RichText = {
 			ed.bus.register('link:add', linkAddCommand(options));
 			ed.bus.register('link:remove', linkRemoveCommand());
 			ed.bus.register('list:task', taskListCommand());
+			ed.bus.register('math:add', mathCommand());
 			mountToolbar(ed);
 			ed.root.setAttribute('data-rtx-attached','true');
 			t.setAttribute('data-rtx-source','true');
@@ -75,12 +78,13 @@ export const RichText = {
 	redo(){ instances.forEach(i=> i.redo()); },
 	exportAllPlain(){ return _all().map(i=> i.exportPlainText()); },
 	exportAllMarkdown(){ return _all().map(i=> i.exportMarkdown()); },
+	exportAllHTML(){ return _all().map(i=> i.exportHTML()); },
 	enforceLinkPolicy,
 	_all
 };
 
 // Version injected manually (consider automated replacement in future build step)
-RichText.version = '0.2.6';
+RichText.version = '0.3.0';
 
 function blockCommand(tag){
 	return (ed)=>{
@@ -157,6 +161,26 @@ function taskListCommand(){
 			const ul=document.createElement('ul'); ul.setAttribute('data-list','task');
 			const li=document.createElement('li'); li.setAttribute('data-checked','false'); li.innerHTML=node.innerHTML || '<br />'; ul.appendChild(li); ed.content.replaceChild(ul,node);
 		}
+	};
+}
+function mathCommand(){
+	return (ed)=>{
+		const sel = document.getSelection(); if(!sel || sel.rangeCount===0) return;
+		const latex = (options && options.promptMath)? options.promptMath() : (typeof window.prompt==='function'? window.prompt('Enter LaTeX:','x^2') : null);
+		if(!latex) return;
+		const span = document.createElement('span');
+		span.className = 'math';
+		span.textContent = latex;
+		try {
+			katex.render(latex, span, { throwOnError: false });
+		} catch(e) {
+			span.textContent = '[Math Error]';
+		}
+		const range = sel.getRangeAt(0);
+		range.deleteContents();
+		range.insertNode(span);
+		sel.collapse(span.nextSibling || span, 0);
+		ed.bus.exec('noop');
 	};
 }
 if(typeof window!== 'undefined') window.RichText = RichText;

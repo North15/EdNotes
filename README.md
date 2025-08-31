@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/North15/EdNotes/actions/workflows/ci.yml/badge.svg)
 ![NuGet](https://img.shields.io/nuget/v/EdNotes.RichText.svg)
-![Package Version](https://img.shields.io/badge/version-0.2.5-informational.svg)
+![Package Version](https://img.shields.io/badge/version-0.3.0-informational.svg)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/EdNotes.RichText.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -16,10 +16,10 @@ Bundle filename is `ednotes.richtext.bundle.js` (legacy `yourorg.richtext.bundle
 
 ## Installation
 
-NuGet (current version 0.2.5):
+NuGet (current version 0.3.0):
 
 ```bash
-dotnet add package EdNotes.RichText --version 0.2.5
+dotnet add package EdNotes.RichText --version 0.3.0
 ```
 
 Add static script reference:
@@ -69,13 +69,14 @@ RichText.undo();
 RichText.redo();
 const [plain] = RichText.exportAllPlain();
 const [md] = RichText.exportAllMarkdown();
+const [html] = RichText.exportAllHTML();
 </script>
 ```
 
 ## Feature Highlights
 
 * Strict schema (allowed tags only): paragraphs, h1‑h3, lists (ul/ol/li), blockquote, code/pre, tables (thead/tbody/tr/th/td), task lists (ul[data-list="task"]).
-* Marks: strong / em / u / a.
+* Marks: strong / em / u / a / math (KaTeX rendering).
 * Sanitization: client normalization + server `HtmlPolicySanitizer` (allowlist attributes, link protocol enforcement, removal of scripts/iframes/styles, whitespace & encoded `javascript:` defense).
 * Undo/redo history with idle typing batching & size cap.
 * List indent/outdent via Tab / Shift+Tab.
@@ -96,6 +97,7 @@ const [md] = RichText.exportAllMarkdown();
 | `RichText.triggerSave()` | Sync underlying textarea values. |
 | `RichText.exportAllPlain()` | Array of plain text for each instance. |
 | `RichText.exportAllMarkdown()` | Array of Markdown outputs. |
+| `RichText.exportAllHTML()` | Array of HTML outputs. |
 | `RichText._all()` | (Internal) array of editor instances (useful for tests). |
 
 ### Options
@@ -122,6 +124,21 @@ const [md] = RichText.exportAllMarkdown();
 * Live region (polite) announces successful command application.
 * Keyboard shortcuts documented above; headings via Ctrl+Alt+1/2/3 for quick structure.
 * Focus stays in editor; undo/redo notifies via updated content (consider adding optional audible notifications later).
+
+## Themes
+
+Apply CSS classes to the editor root for education-friendly themes:
+
+* `.theme-high-contrast`: Black background, white text/borders.
+* `.theme-dyslexia`: Comic Sans font, light blue background.
+
+Example:
+
+```html
+<div class="rtx-editor theme-high-contrast">
+  <!-- editor content -->
+</div>
+```
 
 ## Performance
 
@@ -152,6 +169,11 @@ Please open issues for feature proposals (keep scope small). PRs should include:
 
 ## Roadmap (Next)
 
+* Math equation rendering (KaTeX) ✅
+* Mobile responsiveness improvements ✅
+* Education-friendly themes ✅
+* HTML export ✅
+* Increased test coverage ✅
 * More sanitizer parity tests (.NET) for encoded edge cases. ⏳
 * Task list interaction (toggle checked state via keyboard). ⏳
 * Heading level cycling / remove heading shortcut. ⏳
