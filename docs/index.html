@@ -158,6 +158,7 @@
                 <button class="theme-btn" data-theme="high-contrast">High Contrast</button>
                 <button class="theme-btn" data-theme="dyslexia">Dyslexia Friendly</button>
             </div>
+            <textarea id="demo-editor" style="width:100%;min-height:160px;">Welcome to <strong>EdNotes</strong> demo! Try the toolbar buttons above or add a math equation.</textarea>
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
                 <link rel="stylesheet" href="./editor.css?v=3">
                 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
@@ -182,98 +183,5 @@
                         if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
                     })();
                 </script>
-    <script>
-        // Initialize demo editor
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing editor...');
-
-            try {
-                // Check if RichText is available
-                if (typeof RichText === 'undefined') {
-                    console.error('RichText is not defined - script not loaded');
-                    return;
-                }
-
-                console.log('RichText object:', RichText);
-                console.log('RichText.attach method:', typeof RichText.attach);
-
-                // Check if textarea exists
-                const textarea = document.getElementById('demo-editor');
-                if (!textarea) {
-                    console.error('Textarea not found');
-                    return;
-                }
-
-                console.log('Textarea found:', textarea);
-                console.log('Textarea content:', textarea.value);
-
-                // Initialize the editor
-                const editorCount = RichText.attach('#demo-editor');
-                console.log('Attached', editorCount, 'editor(s)');
-
-                if (editorCount === 0) {
-                    console.error('Failed to attach editor - textarea not found');
-                    return;
-                }
-
-                // Theme switching with proper timing
-                const themeButtons = document.querySelectorAll('.theme-btn');
-                console.log('Found', themeButtons.length, 'theme buttons');
-
-                themeButtons.forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        console.log('Theme button clicked:', this.dataset.theme);
-                        themeButtons.forEach(b => b.classList.remove('active'));
-                        this.classList.add('active');
-
-                        const theme = this.dataset.theme;
-
-                        // Wait a bit for editor to be fully initialized
-                        setTimeout(() => {
-                            try {
-                                // Apply theme to document body since CSS variables are global
-                                document.body.classList.remove('theme-high-contrast', 'theme-dyslexia');
-
-                                // Apply new theme if not default
-                                if (theme !== 'default') {
-                                    document.body.classList.add('theme-' + theme);
-                                }
-
-                                console.log('Applied theme:', theme, 'to document body');
-                                console.log('Body classes:', document.body.className);
-                            } catch (error) {
-                                console.error('Error applying theme:', error);
-                            }
-                        }, 200);
-                    });
-                });
-
-                // Log editor initialization for debugging
-                setTimeout(() => {
-                    const editor = document.querySelector('.rtx-editor');
-                    const content = document.querySelector('.rtx-content');
-                    const toolbar = document.querySelector('.rtx-toolbar');
-
-                    console.log('Editor elements found:', {
-                        editor: !!editor,
-                        content: !!content,
-                        toolbar: !!toolbar
-                    });
-
-                    if (content) {
-                        console.log('Content HTML:', content.innerHTML.substring(0, 200) + '...');
-                    }
-
-                    if (toolbar) {
-                        console.log('Toolbar buttons:', toolbar.querySelectorAll('button').length);
-                    }
-                }, 500);
-
-            } catch (error) {
-                console.error('Error initializing editor:', error);
-            }
-        });
-    </script>
 </body>
 </html></content>
-<parameter name="filePath">c:\Users\jnort\OneDrive\Documents\GitHub\EdNotes\docs\index.html

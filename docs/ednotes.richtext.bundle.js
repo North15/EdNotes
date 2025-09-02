@@ -1,9 +1,63 @@
-// Primary public bundle entry for EdNotes Rich Text Editor.
-// Exports all public API symbols (previous legacy yourorg bundle removed in 0.2.0).
-import { EditorCore, markCommand } from './core/CommandBus.js';
-import { enforceLinkPolicy } from './core/Schema.js';
-// Attempt to resolve katex from global (in demo we load via CDN). If not present, provide noop.
-const katex = (typeof window !== 'undefined' && window.katex) ? window.katex : { render:(latex, el)=>{/* no-op fallback */} };
+// Standalone demo bundle (no ES module imports) for docs page.
+(function(global){
+	// Lightweight inline copies of required pieces from core (trimmed for demo)
+	function enforceLinkPolicy(a){
+		if(!a || !a.getAttribute) return;
+		const href = (a.getAttribute('href')||'').trim();
+		if(!href) { a.removeAttribute('href'); return; }
+		const safe = /^(https?:|mailto:|#|\/)/i.test(href);
+		if(!safe){ a.removeAttribute('href'); a.removeAttribute('target'); a.removeAttribute('rel'); return; }
+		if(/^https?:/i.test(href)){
+			a.setAttribute('rel','noopener noreferrer');
+			a.setAttribute('target','_blank');
+		}
+	}
+	function normalize(root){
+		// Very small subset: ensure only allowed tags & sanitize links
+		const allowed = new Set(['p','strong','em','u','ul','ol','li','a','h1','h2','h3','span','br']);
+		const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+		const toRemove=[];
+		while(walker.nextNode()){
+			const el = walker.currentNode;
+			const tag = el.tagName.toLowerCase();
+			if(!allowed.has(tag)) { toRemove.push(el); continue; }
+			if(tag==='a') enforceLinkPolicy(el);
+			if(tag==='span' && el.classList.contains('math')){ /* allow */ }
+		}
+		toRemove.forEach(n=> n.replaceWith(...Array.from(n.childNodes)));
+	}
+	function captureBookmark(container){
+		const sel = document.getSelection(); if(!sel || sel.rangeCount===0) return null;
+		const range = sel.getRangeAt(0);
+		return { startOffset: range.startOffset, endOffset: range.endOffset, startNode: range.startContainer, endNode: range.endContainer };
+	}
+	function restoreBookmark(container, bm){ if(!bm) return; try { const sel=document.getSelection(); const r=document.createRange(); r.setStart(bm.startNode,bm.startOffset); r.setEnd(bm.endNode,bm.endOffset); sel.removeAllRanges(); sel.addRange(r);} catch(_){} }
+	class CommandBus { constructor(editor){ this.editor=editor; this._registry=new Map(); } register(n,f){this._registry.set(n,f);} exec(n,o){const fn=this._registry.get(n); if(!fn) return false; this.editor._transaction(ed=>fn(ed,o||{})); return true;} }
+	function markCommand(tag){
+		return (ed)=>{
+			const sel = document.getSelection(); if(!sel||sel.rangeCount===0||sel.isCollapsed) return;
+			const range = sel.getRangeAt(0);
+			const wrapper = document.createElement(tag);
+			wrapper.appendChild(range.extractContents());
+			range.insertNode(wrapper);
+			sel.collapse(wrapper, wrapper.childNodes.length);
+		};
+	}
+	class EditorCore {
+		constructor(textarea, options){ this.textarea=textarea; this.options=options||{}; this.root=this._build(); this.content=this.root.querySelector('.rtx-content'); this.bus=new CommandBus(this); this.bus.register('noop',()=>{}); this._wire(); this.content.innerHTML = this.textarea.value || '<p></p>'; this._pushHistory(); }
+		_build(){ const w=document.createElement('div'); w.className='rtx-editor'; const tb=document.createElement('div'); tb.className='rtx-toolbar'; const c=document.createElement('div'); c.className='rtx-content'; c.contentEditable='true'; w.appendChild(tb); w.appendChild(c); this.textarea.style.display='none'; this.textarea.parentNode.insertBefore(w,this.textarea.nextSibling); return w; }
+		_wire(){ this.content.addEventListener('input', ()=> this._transaction(()=>{})); }
+		_transaction(worker){ const bm=captureBookmark(this.content); worker(this); normalize(this.content); restoreBookmark(this.content,bm); this.textarea.value=this.serialize(); }
+		_pushHistory(){}
+		serialize(){ return this.content.innerHTML; }
+		triggerSave(){ this.textarea.value = this.serialize(); }
+		exportPlainText(){ return this.content.textContent || ''; }
+		exportMarkdown(){ return this.exportPlainText(); }
+		exportHTML(){ return this.serialize(); }
+		undo(){}
+		redo(){}
+	}
+	const katex = (global.katex) ? global.katex : { render:()=>{} };
 
 // Minimal facade replicating prior RichText export shape.
 const instances = new Set();
@@ -44,7 +98,7 @@ function mountToolbar(editor){
 	});
 }
 
-export const RichText = {
+const RichText = {
 	attach(selector, options={}){
 		const nodes = document.querySelectorAll(selector);
 		if(nodes.length===0){
@@ -86,7 +140,7 @@ export const RichText = {
 };
 
 // Version injected manually (consider automated replacement in future build step)
-RichText.version = '0.3.0';
+RichText.version = '0.4.1';
 
 function blockCommand(tag){
 	return (ed)=>{
@@ -186,3 +240,4 @@ function mathCommand(options){
 	};
 }
 if(typeof window!== 'undefined') window.RichText = RichText;
+})(typeof window !== 'undefined' ? window : globalThis);
