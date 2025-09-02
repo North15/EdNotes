@@ -156,100 +156,37 @@
                 <button class="theme-btn" data-theme="high-contrast">High Contrast</button>
                 <button class="theme-btn" data-theme="dyslexia">Dyslexia Friendly</button>
             </div>
-            <div class="editor-container">
-                <textarea id="demo-editor"><h1>Welcome to EdNotes</h1><p>This is a <strong>rich text editor</strong> designed for education.</p><p>You can format text as <strong>bold</strong>, <em>italic</em>, or <u>underline</u>.</p></textarea>
-            </div>
-        </div>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-mLLb8qxqB1ZqJkJsteVEh9UpAJZxkd06P88eaJEqn3Ejj6bUeJ8m+RaH59snW8y+" crossorigin="anonymous">
+            <link rel="stylesheet" href="./editor.css?v=2">
+            <script type="module">
+                // Load KaTeX (ESM) and the editor bundle, then attach.
+                async function boot(){
+                    try {
+                        const katex = await import('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.mjs');
+                        // Make katex available globally so the bundle can find it if needed
+                        window.katex = katex.default || katex;
+                    } catch(e){
+                        console.warn('KaTeX failed to load, math rendering will be plain text.', e);
+                        window.katex = { render:(latex, el)=>{ /* fallback leaves textContent */ } };
+                    }
+                    // Import editor after katex so it can immediately use global
+                    const mod = await import('./ednotes.richtext.bundle.js?v=2');
+                    const { RichText } = mod;
+                    window.RichText = RichText; // expose for console experimentation
+                    RichText.attach('#demo-editor');
 
-        <h2>Keyboard Shortcuts</h2>
-        <div class="keyboard-shortcuts">
-            <div class="shortcut">
-                <span>Undo</span>
-                <span><kbd>Ctrl</kbd> + <kbd>Z</kbd></span>
-            </div>
-            <div class="shortcut">
-                <span>Redo</span>
-                <span><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></span>
-            </div>
-            <div class="shortcut">
-                <span>Bold</span>
-                <span><kbd>Ctrl</kbd> + <kbd>B</kbd></span>
-            </div>
-            <div class="shortcut">
-                <span>Italic</span>
-                <span><kbd>Ctrl</kbd> + <kbd>I</kbd></span>
-            </div>
-            <div class="shortcut">
-                <span>Underline</span>
-                <span><kbd>Ctrl</kbd> + <kbd>U</kbd></span>
-            </div>
-            <div class="shortcut">
-                <span>Heading 1</span>
-                <span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>1</kbd></span>
-            </div>
-            <div class="shortcut">
-                <span>Heading 2</span>
-                <span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>2</kbd></span>
-            </div>
-            <div class="shortcut">
-                <span>Heading 3</span>
-                <span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>3</kbd></span>
-            </div>
-            <div class="shortcut">
-                <span>Paragraph</span>
-                <span><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>0</kbd></span>
-            </div>
-            <div class="shortcut">
-                <span>Toggle Task</span>
-                <span><kbd>Enter</kbd> or <kbd>Space</kbd></span>
-            </div>
-        </div>
-
-        <h2>API Reference</h2>
-        <h3>RichText.attach(selector, options)</h3>
-        <p>Initialize the editor on a textarea element.</p>
-        <div class="code-block">
-RichText.attach('#my-editor', {
-    onChange: (html) => console.log('Content changed:', html)
-});
-        </div>
-
-        <h3>RichText.exportHTML()</h3>
-        <p>Export the current editor content as HTML.</p>
-        <div class="code-block">
-const html = RichText.exportHTML();
-        </div>
-
-        <h3>Theming</h3>
-        <p>Apply themes by adding CSS classes to the editor container:</p>
-        <div class="code-block">
-/* High contrast theme */
-.rtx-content.theme-high-contrast {
-    --text-color: #000000;
-    --bg-color: #ffffff;
-    --accent-color: #0000ff;
-}
-
-/* Dyslexia friendly theme */
-.rtx-content.theme-dyslexia {
-    --text-color: #2c3e50;
-    --bg-color: #f8f8f2;
-    --font-family: 'OpenDyslexic', sans-serif;
-}
-        </div>
-
-        <h2>Math Equations</h2>
-        <p>Use the math toolbar button or insert LaTeX directly:</p>
-        <div class="code-block">
-&lt;span class="math"&gt;x^2 + y^2 = z^2&lt;/span&gt;
-        </div>
-
-        <h2>Security</h2>
-        <p>EdNotes automatically sanitizes all content to prevent XSS attacks. Only safe HTML elements and attributes are allowed.</p>
-    </div>
-
-    <link rel="stylesheet" href="./editor.css?v=1">
-    <script src="./ednotes.richtext.bundle.js?v=1"></script>
+                    // Theme buttons
+                    const themeButtons = document.querySelectorAll('.theme-btn');
+                    themeButtons.forEach(btn => btn.addEventListener('click', () => {
+                        themeButtons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        const theme = btn.dataset.theme;
+                        document.body.classList.remove('theme-high-contrast','theme-dyslexia');
+                        if(theme !== 'default') document.body.classList.add('theme-'+theme);
+                    }));
+                }
+                boot();
+            </script>
     <script>
         // Initialize demo editor
         document.addEventListener('DOMContentLoaded', function() {
