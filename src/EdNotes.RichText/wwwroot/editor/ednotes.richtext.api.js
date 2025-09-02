@@ -44,8 +44,8 @@ const EdNotesRichText = {
             promptLink: finalConfig.promptLink
         };
         
-        // Initialize with backward compatibility
-        const count = RichText.attach(finalConfig.selector, attachOptions);
+    // Initialize with backward compatibility (return value not needed; instances gathered below)
+    RichText.attach(finalConfig.selector, attachOptions);
         
         // Apply theme if specified
         if (finalConfig.theme && finalConfig.theme !== 'default') {
