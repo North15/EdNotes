@@ -3,11 +3,7 @@
 import { EditorCore, markCommand } from './core/CommandBus.js';
 import { enforceLinkPolicy } from './core/Schema.js';
 // Attempt to resolve katex from global (in demo we load via CDN). If not present, provide noop.
-let katex;
-try { katex = window.katex || (await import('katex')).default; } catch(_) { /* non-module context or failure */ }
-if(!katex) {
-	katex = { render:(latex, el)=>{ /* fallback: leave textContent unchanged */ } };
-}
+const katex = (typeof window !== 'undefined' && window.katex) ? window.katex : { render:(latex, el)=>{/* no-op fallback */} };
 
 // Minimal facade replicating prior RichText export shape.
 const instances = new Set();
