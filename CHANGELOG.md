@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.3] - 2025-09-02
+
+### Removed (0.5.3)
+
+- Dynamic Shields endpoint badge automation (coverage, performance, test count) removed from CI and README.
+
+### Changed (0.5.3)
+
+- README cleaned of custom gist-backed badges; retained core CI / package / license badges only.
+- Version bumped to 0.5.3 for documentation adjustment (no runtime code changes).
+
+### Migration Notes (0.5.3)
+
+No API or functional changes. Consumers can upgrade without modifications. This release solely removes previously introduced dynamic badge references.
+
 ## [0.5.2] - 2025-09-02
 
 ### Added (0.5.2)

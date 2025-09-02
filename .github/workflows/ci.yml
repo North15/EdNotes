@@ -8,6 +8,7 @@ on:
 jobs:
   build-test-pack:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -15,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Prepare Artifact Directories
-        run: node -e "['artifacts/test-results/js','artifacts/test-results/dotnet','artifacts/coverage/js','artifacts/coverage','artifacts/badges'].forEach(d=>require('fs').mkdirSync(d,{recursive:true}));"
+        run: node -e "['artifacts/test-results/js','artifacts/test-results/dotnet','artifacts/coverage/js','artifacts/coverage'].forEach(d=>require('fs').mkdirSync(d,{recursive:true}));"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -73,7 +74,22 @@ jobs:
       - name: Extract .NET Coverage
         if: always()
         run: |
-          node -e "const fs=require('fs'),path=require('path');function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{const p=path.join(d,e.name);return e.isDirectory()?walk(p):(p.endsWith('.cobertura.xml')?[p]:[]);});}if(!fs.existsSync('artifacts/test-results/dotnet')){console.log('No dotnet test results dir');process.exit(0);}const files=walk('artifacts/test-results/dotnet');if(files.length){fs.mkdirSync('artifacts/coverage',{recursive:true});fs.copyFileSync(files[0],'artifacts/coverage/dotnet.cobertura.xml');console.log('Copied coverage from',files[0]);}else{console.log('No cobertura file found');}"
+          echo "Scanning for .cobertura.xml files..."
+          node -e "const fs=require('fs'),path=require('path');function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{const p=path.join(d,e.name);return e.isDirectory()?walk(p):(p.endsWith('.cobertura.xml')?[p]:[]);});}if(!fs.existsSync('artifacts/test-results/dotnet')){console.log('No dotnet test results dir');process.exit(0);}const files=walk('artifacts/test-results/dotnet');if(files.length){fs.mkdirSync('artifacts/coverage',{recursive:true});fs.copyFileSync(files[0],'artifacts/coverage/dotnet.cobertura.xml');console.log('Copied coverage from',files[0]);}else{console.log('No cobertura file found (will attempt reportgenerator if installed)');process.exit(0);}"
+          # Optionally generate a normalized Cobertura report & HTML summary if reportgenerator is available
+          echo "Attempting to install reportgenerator (optional)..."
+          dotnet tool install --global dotnet-reportgenerator-globaltool || echo "reportgenerator install skipped"
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+          if command -v reportgenerator >/dev/null 2>&1; then
+            mkdir -p artifacts/coverage/dotnet
+            reportgenerator -reports:"artifacts/test-results/dotnet/**/coverage.cobertura.xml" -targetdir:"artifacts/coverage/dotnet" -reporttypes:"Cobertura;HtmlSummary" || echo "reportgenerator execution failed (non-fatal)"
+            # Normalize output filename if present
+            if [ -f artifacts/coverage/dotnet/Cobertura.xml ]; then
+              cp artifacts/coverage/dotnet/Cobertura.xml artifacts/coverage/dotnet.cobertura.xml
+            fi
+          else
+            echo "reportgenerator not available; using raw copied cobertura file if present"
+          fi
 
       - name: .NET Coverage Threshold
         if: success()
@@ -95,61 +111,6 @@ jobs:
           } else console.log('No JS coverage');
           if(fs.existsSync('artifacts/coverage/dotnet.cobertura.xml')) console.log('DotNet coverage: Found dotnet coverage file'); else console.log('DotNet coverage: No dotnet coverage file');"
 
-      - name: Generate Dynamic Badges
-        if: success() && runner.os == 'Linux'
-        run: node scripts/update-badges.mjs
-
-      - name: Upload Badges to Gist
-        # Avoid referencing secrets directly in the expression (was causing parser error); gate inside script.
-        if: success() && runner.os == 'Linux'
-        env:
-          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
-          BADGE_GIST_ID: ${{ secrets.BADGE_GIST_ID }}
-        run: |
-          if [ -z "${BADGE_GIST_ID}" ]; then
-            echo "BADGE_GIST_ID not set; skipping gist upload step."; exit 0;
-          fi
-          # Upload each badge JSON file to the gist
-          if [ -d "artifacts/badges" ] && [ "$(ls -A artifacts/badges/*.json 2>/dev/null)" ]; then
-            for file in artifacts/badges/*.json; do
-              if [ -f "$file" ]; then
-                filename=$(basename "$file")
-                echo "Uploading $filename to gist $BADGE_GIST_ID..."
-                if [ -z "$GIST_TOKEN" ]; then
-                  echo "⚠️ GIST_TOKEN not set; skipping upload."; continue;
-                fi
-                # Properly JSON-encode file content (handles quotes, newlines) using jq
-                if command -v jq >/dev/null 2>&1; then
-                  encoded=$(jq -Rs . < "$file")
-                  resp=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X PATCH \
-                    -H "Authorization: token $GIST_TOKEN" \
-                    -H "Accept: application/vnd.github.v3+json" \
-                    "https://api.github.com/gists/$BADGE_GIST_ID" \
-                    -d "{\"files\":{\"$filename\":{\"content\":$encoded}}}")
-                else
-                  # Fallback: minimal escaping (may fail with complex JSON); recommend keeping jq available
-                  payload=$(python - <<'PY'
-import json,sys
-print(json.dumps(open(sys.argv[1],'r',encoding='utf-8').read()))
-PY
-"$file")
-                  resp=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X PATCH \
-                    -H "Authorization: token $GIST_TOKEN" \
-                    -H "Accept: application/vnd.github.v3+json" \
-                    "https://api.github.com/gists/$BADGE_GIST_ID" \
-                    -d "{\"files\":{\"$filename\":{\"content\":$payload}}}")
-                fi
-                if [ "$resp" != "200" ]; then
-                  echo "❌ Failed to upload $filename (HTTP $resp)"; cat /tmp/resp.json; exit 1;
-                else
-                  echo "✅ Uploaded $filename"
-                fi
-              fi
-            done
-          else
-            echo "⚠️ No badge files found to upload"
-          fi
-
       - name: Performance Benchmark
         if: success() && runner.os == 'Linux'
         run: node scripts/bench-normalize.mjs 800 > artifacts/benchmark-normalize.json
@@ -160,13 +121,6 @@ PY
           PERF_BASELINE_MS_PER_BLOCK: 0.60
           PERF_TOLERANCE_PCT: 20
         run: node scripts/perf-regression-check.mjs
-
-      - name: Upload Coverage Badges
-        if: always() && runner.os == 'Linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-badges
-          path: artifacts/badges
 
       - name: Pack
         run: dotnet pack src/EdNotes.RichText/EdNotes.RichText.csproj -c Release -o ./artifacts

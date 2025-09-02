@@ -474,7 +474,7 @@
 
   // Version injected manually (consider automated replacement in future build step)
   // Bump version for documentation/demo fixes (theme switching + demo content adjustments)
-  RichText.version = '0.5.2';
+  RichText.version = '0.5.3';
 
   function blockCommand(tag){
   	return (ed)=>{

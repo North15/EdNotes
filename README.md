@@ -3,13 +3,9 @@
 ![CI](https://github.com/North15/EdNotes/actions/workflows/ci.yml/badge.svg)
 ![NPM Version](https://img.shields.io/npm/v/ednotes-richtext.svg)
 ![NuGet](https://img.shields.io/nuget/v/EdNotes.RichText.svg)
-![Package Version](https://img.shields.io/badge/version-0.5.2-informational.svg)
+![Package Version](https://img.shields.io/badge/version-0.5.3-informational.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-[![JS Test Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/North15/8e05a23df61bc45321336edc41f1bc96/raw/js-coverage.json&cacheSeconds=300)](https://github.com/North15/EdNotes/actions/workflows/ci.yml)
-[![.NET Test Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/North15/8e05a23df61bc45321336edc41f1bc96/raw/dotnet-coverage.json&cacheSeconds=300)](https://github.com/North15/EdNotes/actions/workflows/ci.yml)
-[![Performance](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/North15/8e05a23df61bc45321336edc41f1bc96/raw/performance.json&cacheSeconds=300)](https://github.com/North15/EdNotes/actions/workflows/ci.yml)
-[![Test Suites](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/North15/8e05a23df61bc45321336edc41f1bc96/raw/test-count.json&cacheSeconds=300)](https://github.com/North15/EdNotes/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/github/actions/workflow/status/North15/EdNotes/ci.yml?label=tests&logo=github)](https://github.com/North15/EdNotes/actions/workflows/ci.yml)
 
 A rich text editor with security-first design, accessibility focus, and modern developer experience. Plugin system, declarative toolbar, CSS variables theming, and TypeScript support.
@@ -20,8 +16,8 @@ A rich text editor with security-first design, accessibility focus, and modern d
 
 ```html
 <!-- Include CSS and JS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.2/dist/ednotes.richtext.css">
-<script src="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.2/dist/ednotes.richtext.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.3/dist/ednotes.richtext.css">
+<script src="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.3/dist/ednotes.richtext.umd.min.js"></script>
 
 <!-- Your textarea -->
 <textarea id="content">Start typing...</textarea>
@@ -174,7 +170,7 @@ Please open issues for feature proposals (keep scope small). PRs should include:
 * Task list interaction (toggle checked state via keyboard) ✅
 * Heading level cycling / remove heading shortcut ✅
 * Documentation site sample & theming guidance ✅
-* Optional: publish coverage & performance badges publicly.
+
 
 ## Versioning
 
