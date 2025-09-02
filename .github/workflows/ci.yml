@@ -100,12 +100,15 @@ jobs:
         run: node scripts/update-badges.mjs
 
       - name: Upload Badges to Gist
-        # Use explicit expression syntax so 'secrets' context is parsed correctly
-        if: ${{ success() && runner.os == 'Linux' && secrets.BADGE_GIST_ID != '' }}
+        # Avoid referencing secrets directly in the expression (was causing parser error); gate inside script.
+        if: success() && runner.os == 'Linux'
         env:
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
           BADGE_GIST_ID: ${{ secrets.BADGE_GIST_ID }}
         run: |
+          if [ -z "${BADGE_GIST_ID}" ]; then
+            echo "BADGE_GIST_ID not set; skipping gist upload step."; exit 0;
+          fi
           # Upload each badge JSON file to the gist
           if [ -d "artifacts/badges" ] && [ "$(ls -A artifacts/badges/*.json 2>/dev/null)" ]; then
             for file in artifacts/badges/*.json; do
