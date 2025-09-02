@@ -65,7 +65,7 @@ export const RichText = {
 			ed.bus.register('link:add', linkAddCommand(options));
 			ed.bus.register('link:remove', linkRemoveCommand());
 			ed.bus.register('list:task', taskListCommand());
-			ed.bus.register('math:add', mathCommand());
+			ed.bus.register('math:add', mathCommand(options));
 			mountToolbar(ed);
 			ed.root.setAttribute('data-rtx-attached','true');
 			t.setAttribute('data-rtx-source','true');
@@ -80,11 +80,13 @@ export const RichText = {
 	exportAllMarkdown(){ return _all().map(i=> i.exportMarkdown()); },
 	exportAllHTML(){ return _all().map(i=> i.exportHTML()); },
 	enforceLinkPolicy,
-	_all
+	_all,
+	_clearInstances: () => instances.clear(),
 };
 
 // Version injected manually (consider automated replacement in future build step)
-RichText.version = '0.3.0';
+// Bump version for documentation/demo fixes (theme switching + demo content adjustments)
+RichText.version = '0.4.0';
 
 function blockCommand(tag){
 	return (ed)=>{
@@ -163,7 +165,7 @@ function taskListCommand(){
 		}
 	};
 }
-function mathCommand(){
+function mathCommand(options){
 	return (ed)=>{
 		const sel = document.getSelection(); if(!sel || sel.rangeCount===0) return;
 		const latex = (options && options.promptMath)? options.promptMath() : (typeof window.prompt==='function'? window.prompt('Enter LaTeX:','x^2') : null);

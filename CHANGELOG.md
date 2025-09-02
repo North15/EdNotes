@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.0] - 2025-09-02
+
+### Fixed (0.4.0)
+
+- Documentation demo page (`docs/index.html`) updated so the rich text editor initializes reliably when opened directly from the filesystem (copied bundle & CSS locally instead of using relative up-level path).
+- Theme switching logic now applies classes at `document.body` level for predictable CSS variable cascade; added defensive logging to aid future troubleshooting.
+- Simplified demo seed content to valid HTML (removed pseudo‑markdown markers) ensuring parser / normalizer starts from clean DOM and toolbar renders expected state.
+
+### Changed (0.4.0)
+
+- Bumped version to `0.4.0` (exposed via `RichText.version`).
+- Minor script hardening in demo: error guards when `RichText` is not yet defined.
+
+### Internal (0.4.0)
+
+- No runtime functional changes to core editor commands besides version constant.
+- Maintains high JS test coverage (≈84% statements / ≈76% branches) validated after demo adjustments.
+
+### Migration Notes (0.4.0)
+
+No action required for integrators. If referencing the demo as a template, ensure you copy the built `editor.css` and `ednotes.richtext.bundle.js` into your served assets and call `RichText.attach('#your-textarea-id')` after `DOMContentLoaded`.
+
 ## [0.3.0] - 2025-08-31
 
 ### Added
