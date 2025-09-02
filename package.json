@@ -7,7 +7,9 @@
     "lint": "eslint src/EdNotes.RichText/wwwroot/editor/**/*.js",
     "lint:fix": "eslint src/EdNotes.RichText/wwwroot/editor/**/*.js --fix",
     "bench:normalize": "node scripts/bench-normalize.mjs 400",
-    "coverage:check": "node scripts/coverage-threshold.mjs"
+  "coverage:check": "node scripts/coverage-threshold.mjs",
+  "build:js": "rollup -c",
+  "build:js:prod": "rollup -c && ls dist"
   },
   "jest-junit": {
     "outputDirectory": "artifacts/test-results/js",
@@ -36,11 +38,15 @@
     ]
   },
   "devDependencies": {
+  "@rollup/plugin-commonjs": "25.0.7",
+  "@rollup/plugin-node-resolve": "15.2.3",
+  "@rollup/plugin-terser": "0.4.4",
     "eslint": "8.57.0",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
     "jest-junit": "16.0.0",
-    "jsdom": "22.1.0"
+  "jsdom": "22.1.0",
+  "rollup": "4.21.2"
   },
   "dependencies": {
     "katex": "^0.16.22"

@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.1] - 2025-09-02
+
+### Fixed (0.4.1)
+
+- Documentation demo now loads without ES module errors: replaced copied ESM bundle + relative core imports with a self‑contained IIFE (`docs/ednotes.richtext.bundle.js`) safe for direct `<script>` inclusion.
+- Removed duplicate initialization scripts in `docs/index.html` preventing double attach / confusing console noise.
+- Added explicit demo textarea (`#demo-editor`) inside theme demo section so `RichText.attach` finds a target consistently.
+
+### Changed (0.4.1)
+
+- Bumped `RichText.version` to `0.4.1`.
+- Simplified demo initialization script (single guarded bootstrap + theme button wiring).
+
+### Internal (0.4.1)
+
+- Demo bundle contains trimmed inline implementations (command bus subset, normalization-lite) to avoid requiring a build step for docs preview.
+- Updated tests to assert new version constant.
+
+### Migration Notes (0.4.1)
+
+No action for consumers using the packaged library. The standalone docs bundle is ONLY for the static demo page—continue using the distributed build under `wwwroot/editor/` for production.
+
 ## [0.4.0] - 2025-09-02
 
 ### Fixed (0.4.0)

@@ -111,6 +111,29 @@ export class EditorCore {
     this.content.addEventListener('keydown', e => {
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
+      
+      // Task list toggle with Enter or Space
+      if((key === 'enter' || key === ' ') && !mod){
+        const sel = document.getSelection();
+        if(sel.rangeCount > 0){
+          let node = sel.anchorNode;
+          while(node && node !== this.content){
+            if(node.nodeType === 1 && node.tagName.toLowerCase() === 'li'){
+              const ul = node.parentNode;
+              if(ul && ul.tagName.toLowerCase() === 'ul' && ul.getAttribute('data-list') === 'task'){
+                e.preventDefault();
+                const current = node.getAttribute('data-checked') === 'true' ? 'true' : 'false';
+                const next = current === 'true' ? 'false' : 'true';
+                node.setAttribute('data-checked', next);
+                this._pushHistory();
+                return;
+              }
+            }
+            node = node.parentNode;
+          }
+        }
+      }
+      
       if(mod && key === 'z'){ // undo / redo
         e.preventDefault();
         if(e.shiftKey) this.redo(); else this.undo();
@@ -122,9 +145,9 @@ export class EditorCore {
         this.bus.exec(map[key]);
         return;
       }
-      if(mod && e.altKey && ['1','2','3'].includes(e.key)){
+      if(mod && e.altKey && ['0','1','2','3'].includes(e.key)){
         e.preventDefault();
-        const hMap = { '1':'h1', '2':'h2', '3':'h3' };
+        const hMap = { '0':'p', '1':'h1', '2':'h2', '3':'h3' };
         this.bus.exec('block:'+hMap[e.key]);
         return;
       }

@@ -11,6 +11,9 @@ public class SanitizerEdgeCasesTests
     [InlineData("<a href=\"JaVaScRiPt:alert(1)\">X</a>")]
     [InlineData("<a href=\"javascript%3aalert(1)\">X</a>")]
     [InlineData("<a href=\"JavaScript%3Aalert(1)\">X</a>")]
+    [InlineData("<a href=\"%6A%61%76%61%73%63%72%69%70%74%3Aalert(1)\">X</a>")] // fully encoded javascript:
+    [InlineData("<a href=\"%4A%61%76%61%53%63%72%69%70%74%3Aalert(1)\">X</a>")] // mixed case encoded
+    [InlineData("<a href=\"j%61v%61script%3Aalert(1)\">X</a>")] // partially encoded
     public void Drops_javascript_protocol_even_encoded(string html)
     {
         var outHtml = _sanitizer.Sanitize(html).ToLowerInvariant();

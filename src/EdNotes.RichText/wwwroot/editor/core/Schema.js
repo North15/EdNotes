@@ -15,8 +15,18 @@ export function enforceLinkPolicy(a){
   // Decode once to catch simple encoded javascript: patterns
   try { href = decodeURIComponent(href); } catch(_) { /* ignore decode issues */ }
   // Explicitly block javascript: (any casing) after trimming/decoding
-  if(/^javascript:/i.test(href)) { a.removeAttribute('href'); return; }
-  if(!LINK_PROTOCOL_ALLOW.test(href)) { a.removeAttribute('href'); return; }
+  if(/^javascript:/i.test(href)) { 
+    a.removeAttribute('href'); 
+    a.setAttribute('target','_blank');
+    a.setAttribute('rel','noopener noreferrer');
+    return; 
+  }
+  if(!LINK_PROTOCOL_ALLOW.test(href)) { 
+    a.removeAttribute('href'); 
+    a.setAttribute('target','_blank');
+    a.setAttribute('rel','noopener noreferrer');
+    return; 
+  }
   if(href !== originalHref) a.setAttribute('href', href);
   a.setAttribute('target','_blank');
   a.setAttribute('rel','noopener noreferrer');

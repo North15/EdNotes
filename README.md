@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/North15/EdNotes/actions/workflows/ci.yml/badge.svg)
 ![NuGet](https://img.shields.io/nuget/v/EdNotes.RichText.svg)
-![Package Version](https://img.shields.io/badge/version-0.3.0-informational.svg)
+![Package Version](https://img.shields.io/badge/version-0.4.1-informational.svg)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/EdNotes.RichText.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -12,14 +12,16 @@ A security‑first, lightweight rich‑text editor packaged as a Razor Class Lib
 
 Bundle filename is `ednotes.richtext.bundle.js` (legacy `yourorg.richtext.bundle.js` removed starting 0.2.0; see CHANGELOG for migration details).
 
+> 📖 **[View Documentation & Examples](docs/index.html)** - Interactive demo with theming examples and API reference.
+
 > Performance benchmark (normalization cost) runs in CI; a regression gate compares ms/block to a baseline (0.60 ms, 20% tolerance) and fails on excess.
 
 ## Installation
 
-NuGet (current version 0.3.0):
+NuGet (current version 0.4.1):
 
 ```bash
-dotnet add package EdNotes.RichText --version 0.3.0
+dotnet add package EdNotes.RichText --version 0.4.1
 ```
 
 Add static script reference:
@@ -156,6 +158,8 @@ If average ms/block > baseline * (1 + tolerance/100) the build fails. After inte
 | `npm run test` | JS tests + coverage output under `artifacts/coverage/js`. |
 | `npm run lint` | ESLint over editor sources. |
 | `npm run bench:normalize` | Run normalization benchmark locally. |
+| `npm run build:js` | Build ESM + UMD + minified bundles to `dist/`. |
+| `npm run build:js:prod` | Build JS bundles (including min) and list outputs. |
 | `npm run coverage:check` | Enforce JS coverage threshold (CI gate). |
 | `dotnet test` | Run .NET unit tests (sanitizer parity, etc.). |
 
@@ -174,15 +178,15 @@ Please open issues for feature proposals (keep scope small). PRs should include:
 * Education-friendly themes ✅
 * HTML export ✅
 * Increased test coverage ✅
-* More sanitizer parity tests (.NET) for encoded edge cases. ⏳
-* Task list interaction (toggle checked state via keyboard). ⏳
-* Heading level cycling / remove heading shortcut. ⏳
-* Documentation site sample & theming guidance. ⏳
+* More sanitizer parity tests (.NET) for encoded edge cases ✅
+* Task list interaction (toggle checked state via keyboard) ✅
+* Heading level cycling / remove heading shortcut ✅
+* Documentation site sample & theming guidance ✅
 * Optional: publish coverage & performance badges publicly.
 
 ## Versioning
 
-Pre‑1.0: minor versions may include breaking changes with clear changelog notes.
+Pre‑1.0: minor versions may include breaking changes with clear changelog notes. See `CHANGELOG.md` for details. The `docs/` demo uses a lightweight standalone bundle only for the static preview; production apps should import from `/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js`. For CDN / classic script inclusion you can use the generated `dist/ednotes.richtext.umd.min.js` (exposes global `EdNotesRichText.RichText`).
 
 ## License
 
