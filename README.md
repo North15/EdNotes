@@ -6,7 +6,7 @@
 ![Package Version](https://img.shields.io/badge/version-0.5.3-informational.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-[![Tests](https://img.shields.io/github/actions/workflow/status/North15/EdNotes/ci.yml?label=tests&logo=github)](https://github.com/North15/EdNotes/actions/workflows/ci.yml)
+
 
 A rich text editor with security-first design, accessibility focus, and modern developer experience. Plugin system, declarative toolbar, CSS variables theming, and TypeScript support.
 
