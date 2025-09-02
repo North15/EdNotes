@@ -129,10 +129,10 @@ jobs:
                 else
                   # Fallback: minimal escaping (may fail with complex JSON); recommend keeping jq available
                   payload=$(python - <<'PY'
-  import json,sys
-  print(json.dumps(open(sys.argv[1],'r',encoding='utf-8').read()))
-  PY
-  "$file")
+import json,sys
+print(json.dumps(open(sys.argv[1],'r',encoding='utf-8').read()))
+PY
+"$file")
                   resp=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X PATCH \
                     -H "Authorization: token $GIST_TOKEN" \
                     -H "Accept: application/vnd.github.v3+json" \
