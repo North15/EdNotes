@@ -42,7 +42,7 @@ describe('RichText API exports', () => {
   });
 
   test('version property is set', () => {
-    expect(RichText.version).toBe('0.5.1');
+    expect(RichText.version).toBe('0.5.2');
   });
 
   test('triggerSave calls triggerSave on all instances', () => {

@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.5.2] - 2025-09-02
+
+### Added (0.5.2)
+
+- **Dynamic Badges Automation**: Added scripts and CI integration to publish Shields endpoint JSON (JS/.NET coverage, performance, test suites) to a public gist for live README badges.
+
+### Changed (0.5.2)
+
+- **Version Alignment**: Synchronized .NET package version with NPM package (now both 0.5.2) for consistency and easier cross-ecosystem tracking.
+- **Documentation**: README updated with new dynamic badges and version number 0.5.2.
+
+### Internal (0.5.2)
+
+- Robust coverage badge generation with multi-source fallback (coverage-summary.json, coverage-final.json, lcov.info) and Cobertura scan for .NET.
+- Enhanced gist upload step with HTTP status validation and optional PAT secret `GIST_TOKEN`.
+
+### Migration Notes (0.5.2)
+
+No API changes. Consumers can upgrade without code modifications. .NET NuGet version jump to 0.5.x reflects parity with the JavaScript distribution; no functional delta from 0.5.1 besides metadata & automation.
+
 ## [0.5.1] - 2025-09-02
 
 ### Changed (0.5.1)

@@ -18,7 +18,7 @@ const defaultConfig = {
 
 // Global namespace object
 const EdNotesRichText = {
-    version: '0.5.1',
+    version: '0.5.2',
     
     // Industry-standard initialization
     init(config = {}) {
@@ -45,7 +45,7 @@ const EdNotesRichText = {
         };
         
         // Initialize with backward compatibility
-        RichText.attach(finalConfig.selector, attachOptions);
+        const count = RichText.attach(finalConfig.selector, attachOptions);
         
         // Apply theme if specified
         if (finalConfig.theme && finalConfig.theme !== 'default') {
@@ -55,9 +55,11 @@ const EdNotesRichText = {
         // Return actual instances array (get all instances that match our selector)
         const allInstances = RichText._all();
         const elements = document.querySelectorAll(finalConfig.selector);
-        return Array.from(elements).map(el => 
-            allInstances.find(instance => instance.originalTextarea === el)
+        const matchedInstances = Array.from(elements).map(el => 
+            allInstances.find(instance => instance.textarea === el)
         ).filter(Boolean);
+        
+        return matchedInstances;
     },
     
     // Plugin management
@@ -83,7 +85,7 @@ const EdNotesRichText = {
         const instances = RichText._all();
         const element = typeof selector === 'string' ? document.querySelector(selector) : selector;
         if (!element) return undefined;
-        return instances.find(instance => instance.originalTextarea === element);
+        return instances.find(instance => instance.textarea === element);
     },
     
     destroy(selector) {

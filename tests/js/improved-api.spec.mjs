@@ -4,7 +4,7 @@ import { beforeEach, afterEach, describe, it, expect, jest } from '@jest/globals
 // Import bundle first to ensure RichText is available globally
 import { RichText } from '../../src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.bundle.js';
 
-describe.skip('EdNotesRichText improved development API', () => {
+describe('EdNotesRichText improved development API', () => {
   let container;
   
   beforeEach(() => {
@@ -37,7 +37,7 @@ describe.skip('EdNotesRichText improved development API', () => {
     const { EdNotesRichText } = await import('../../src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.api.js');
     
     expect(EdNotesRichText).toBeDefined();
-    expect(EdNotesRichText.version).toBe('0.5.1');
+  expect(EdNotesRichText.version).toBe('0.5.2');
     expect(typeof EdNotesRichText.init).toBe('function');
   });
 
@@ -68,7 +68,7 @@ describe.skip('EdNotesRichText improved development API', () => {
     expect(instances).toBeInstanceOf(Array);
     expect(instances.length).toBe(1);
     expect(instances[0]).toBeDefined();
-    expect(instances[0].originalTextarea).toBe(document.getElementById('test-editor'));
+    expect(instances[0].textarea).toBe(document.getElementById('test-editor'));
   });
 
   it('should validate plugin names and warn about invalid ones', async () => {
@@ -98,7 +98,7 @@ describe.skip('EdNotesRichText improved development API', () => {
     
     const instance = EdNotesRichText.get('#test-editor');
     expect(instance).toBeDefined();
-    expect(instance.originalTextarea.id).toBe('test-editor');
+    expect(instance.textarea.id).toBe('test-editor');
     
     const nonExistent = EdNotesRichText.get('#does-not-exist');
     expect(nonExistent).toBeUndefined();
@@ -131,6 +131,9 @@ describe.skip('EdNotesRichText improved development API', () => {
 
   it('should maintain backward compatibility with RichText.attach', async () => {
     const { EdNotesRichText } = await import('../../src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.api.js');
+    
+    // Ensure the global is set (since dynamic imports might be cached and globals cleared)
+    window.EdNotesRichText = EdNotesRichText;
     
     // Should expose RichText globally for backward compatibility
     expect(window.RichText).toBeDefined();

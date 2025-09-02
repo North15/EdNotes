@@ -1,6 +1,6 @@
 {
   "name": "ednotes-richtext",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Security-first, lightweight rich text editor with accessibility focus",
   "main": "dist/ednotes.richtext.umd.js",
   "module": "src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.api.js",
@@ -34,6 +34,8 @@
     "lint:fix": "eslint src/EdNotes.RichText/wwwroot/editor/**/*.js --fix",
     "bench:normalize": "node scripts/bench-normalize.mjs 400",
     "coverage:check": "node scripts/coverage-threshold.mjs",
+    "badges:update": "node scripts/update-badges.mjs",
+    "badges:test": "node scripts/test-badge-setup.mjs",
     "build:js": "rollup -c",
     "build:js:prod": "rollup -c && ls dist",
     "build": "npm run build:js",
