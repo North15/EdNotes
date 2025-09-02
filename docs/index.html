@@ -13,6 +13,8 @@
             padding: 20px;
             background: #f5f5f5;
         }
+    body.theme-high-contrast { background:#000; color:#fff; }
+    body.theme-dyslexia { font-family: 'Comic Sans MS', cursive; background:#f0f8ff; }
         .container {
             background: white;
             padding: 30px;
@@ -156,37 +158,30 @@
                 <button class="theme-btn" data-theme="high-contrast">High Contrast</button>
                 <button class="theme-btn" data-theme="dyslexia">Dyslexia Friendly</button>
             </div>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-mLLb8qxqB1ZqJkJsteVEh9UpAJZxkd06P88eaJEqn3Ejj6bUeJ8m+RaH59snW8y+" crossorigin="anonymous">
-            <link rel="stylesheet" href="./editor.css?v=2">
-            <script type="module">
-                // Load KaTeX (ESM) and the editor bundle, then attach.
-                async function boot(){
-                    try {
-                        const katex = await import('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.mjs');
-                        // Make katex available globally so the bundle can find it if needed
-                        window.katex = katex.default || katex;
-                    } catch(e){
-                        console.warn('KaTeX failed to load, math rendering will be plain text.', e);
-                        window.katex = { render:(latex, el)=>{ /* fallback leaves textContent */ } };
-                    }
-                    // Import editor after katex so it can immediately use global
-                    const mod = await import('./ednotes.richtext.bundle.js?v=2');
-                    const { RichText } = mod;
-                    window.RichText = RichText; // expose for console experimentation
-                    RichText.attach('#demo-editor');
-
-                    // Theme buttons
-                    const themeButtons = document.querySelectorAll('.theme-btn');
-                    themeButtons.forEach(btn => btn.addEventListener('click', () => {
-                        themeButtons.forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        const theme = btn.dataset.theme;
-                        document.body.classList.remove('theme-high-contrast','theme-dyslexia');
-                        if(theme !== 'default') document.body.classList.add('theme-'+theme);
-                    }));
-                }
-                boot();
-            </script>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+                <link rel="stylesheet" href="./editor.css?v=3">
+                <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+                <script src="./ednotes.richtext.bundle.js?v=3"></script>
+                <script>
+                    (function(){
+                        function init(){
+                            if(!window.RichText){
+                                console.error('RichText bundle not loaded');
+                                return;
+                            }
+                            RichText.attach('#demo-editor');
+                            const themeButtons = document.querySelectorAll('.theme-btn');
+                            themeButtons.forEach(btn => btn.addEventListener('click', () => {
+                                themeButtons.forEach(b => b.classList.remove('active'));
+                                btn.classList.add('active');
+                                const theme = btn.dataset.theme;
+                                document.body.classList.remove('theme-high-contrast','theme-dyslexia');
+                                if(theme !== 'default') document.body.classList.add('theme-'+theme);
+                            }));
+                        }
+                        if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+                    })();
+                </script>
     <script>
         // Initialize demo editor
         document.addEventListener('DOMContentLoaded', function() {
