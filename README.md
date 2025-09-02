@@ -1,77 +1,65 @@
 # EdNotes Rich Text Editor
 
 ![CI](https://github.com/North15/EdNotes/actions/workflows/ci.yml/badge.svg)
+![NPM Version](https://img.shields.io/npm/v/@ednotes/richtext.svg)
 ![NuGet](https://img.shields.io/nuget/v/EdNotes.RichText.svg)
-![Package Version](https://img.shields.io/badge/version-0.4.1-informational.svg)
-![NuGet Downloads](https://img.shields.io/nuget/dt/EdNotes.RichText.svg)
+![Package Version](https://img.shields.io/badge/version-0.5.0-informational.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Coverage & performance badges are emitted as CI artifacts (not committed) while publishing options are evaluated.
+A **TinyMCE-style** rich text editor with security-first design, accessibility focus, and modern developer experience. Plugin system, declarative toolbar, CSS variables theming, and TypeScript support.
 
-A security‑first, lightweight rich‑text editor packaged as a Razor Class Library targeting `net8.0` and `net472`. No media embedding, strict allowlist schema, client + server sanitization parity, accessible toolbar & shortcuts, undo/redo history, autosave, and export helpers.
+� **[Try the Live Demo](docs/tinymce-style-demo.html)** - Interactive playground with theme switching
 
-Bundle filename is `ednotes.richtext.bundle.js` (legacy `yourorg.richtext.bundle.js` removed starting 0.2.0; see CHANGELOG for migration details).
+## ⚡ Quick Start
 
-> 📖 **[View Documentation & Examples](docs/index.html)** - Interactive demo with theming examples and API reference.
+### CDN (Recommended)
 
-> Performance benchmark (normalization cost) runs in CI; a regression gate compares ms/block to a baseline (0.60 ms, 20% tolerance) and fails on excess.
+```html
+<!-- Include CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.0/dist/ednotes.richtext.css">
+<script src="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.0/dist/ednotes.richtext.umd.min.js"></script>
 
-## Installation
+<!-- Your textarea -->
+<textarea id="content">Start typing...</textarea>
 
-NuGet (current version 0.4.1):
+<!-- Initialize (TinyMCE-style) -->
+<script>
+EdNotesRichText.init({
+  selector: '#content',
+  plugins: 'core formatting blocks lists links tables tasks math',
+  toolbar: 'undo redo | blocks | bold italic underline | link | numlist bullist task | table math | removeformat'
+});
+</script>
+```
+
+### NPM
 
 ```bash
-dotnet add package EdNotes.RichText --version 0.4.1
+npm install @ednotes/richtext
 ```
 
-Add static script reference:
+```javascript
+import EdNotesRichText from '@ednotes/richtext';
 
-### ASP.NET Core (`_Layout.cshtml`)
-
-`_content` path is automatically mapped for static web assets from Razor Class Libraries.
-
-Choose ONE pattern:
-
-Module (recommended):
-
-```html
-<script type="module">
-import { RichText } from '/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js';
-RichText.attach('#notes');
-historyLimit: 100,
-
-Do not include both a classic and a module import for the same bundle.
-
-### Classic MVC 5 / .NET Framework 4.7.2
-
-The package drops files under `contentFiles/any/any/Scripts/EdNotes.RichText/`.
-Reference (e.g. inside a layout view):
-
-```html
-<script src="~/Scripts/EdNotes.RichText/editor/ednotes.richtext.bundle.js"></script>
-```
-
-Ensure the package `IncludeAssets` brings `contentFiles` (default). If you use a custom packaging pipeline, verify the script copied to your web application's Scripts folder.
-
-## Quick Start
-
-```html
-<textarea id="notes"></textarea>
-<script type="module">
-import { RichText } from '/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js';
-RichText.attach('#notes', {
- historyLimit: 100,
- onChange: html => console.log('changed', html),
- autosaveIntervalMs: 5000,
- onAutosave: html => saveDraft(html),
- promptLink: () => window.prompt('Enter URL','https://')
+EdNotesRichText.init({
+  selector: 'textarea',
+  plugins: 'core formatting lists links',
+  toolbar: 'undo redo | bold italic | numlist bullist | link'
 });
-// Later
-RichText.undo();
-RichText.redo();
-const [plain] = RichText.exportAllPlain();
-const [md] = RichText.exportAllMarkdown();
-const [html] = RichText.exportAllHTML();
+```
+
+### ASP.NET Core / .NET Framework
+
+```html
+<!-- Include CSS -->
+<link rel="stylesheet" href="~/_content/EdNotes.RichText/editor/ednotes.richtext.css">
+
+<!-- Auto-loading script -->
+<script src="~/_content/EdNotes.RichText/editor/ednotes.richtext.loader.js"></script>
+
+<textarea id="notes"></textarea>
+<script>
+EdNotesRichText.init({ selector: '#notes' });
 </script>
 ```
 

@@ -25,7 +25,7 @@ Use conventional style (feat:, fix:, chore:, docs:, test:, perf:, refactor:). Ex
 1. Update `CHANGELOG.md`.
 2. Bump `<Version>` in `EdNotes.RichText.csproj`.
 3. Tag: `git tag vX.Y.Z`.
-4. Push tag; GitHub Actions will build & (if secret set) publish NuGet package.
+4. Push tag; GitHub Actions will build & publish NuGet package.
 
 ## Security
 

@@ -1,5 +1,57 @@
 # Changelog
 
+## [0.5.0] - 2025-09-02
+
+### Added (0.5.0)
+
+- **Improved Development API**: New industry-standard `EdNotesRichText.init()` method with declarative configuration.
+- **Plugin System**: Modular plugin registry with official plugins (core, formatting, blocks, lists, links, tables, tasks, math).
+- **Toolbar DSL**: String-based toolbar configuration with pipe-separated groups (e.g., `'undo redo | bold italic | link'`).
+- **CSS Variables Theming**: Professional theming system with CSS custom properties for colors, fonts, spacing.
+- **TypeScript Support**: Complete TypeScript declarations for improved developer experience.
+- **NPM Package**: Published as `@ednotes/richtext` with CDN support via jsDelivr.
+- **Enhanced Loader**: Auto-injecting CSS loader with fallback support for modern and legacy browsers.
+- **Framework Ready**: Structured for future React/Blazor wrapper components.
+
+### Changed (0.5.0)
+
+- **Modern Package Structure**: Added `main`, `module`, and `types` fields to `package.json`.
+- **Professional Themes**: Added `professional`, `high-contrast`, and `dyslexia` themes with CSS variables.
+- **Enhanced Documentation**: New comprehensive demo page showcasing the improved API.
+- **Build System**: Rollup configuration now produces ESM, UMD, and minified UMD bundles.
+
+### Backward Compatibility (0.5.0)
+
+- Existing `RichText.attach()` method continues to work unchanged.
+- All current integrations remain functional without modification.
+- Legacy bundle paths and initialization patterns supported.
+
+### Migration Guide (0.5.0)
+
+**New Recommended Approach:**
+
+```html
+<!-- CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.0/dist/ednotes.richtext.css">
+<script src="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.0/dist/ednotes.richtext.umd.min.js"></script>
+<script>
+EdNotesRichText.init({
+  selector: 'textarea',
+  plugins: 'core formatting lists links',
+  toolbar: 'undo redo | bold italic | numlist bullist | link'
+});
+</script>
+```
+
+**Legacy Approach (Still Supported):**
+
+```html
+<script type="module">
+import { RichText } from '/_content/EdNotes.RichText/editor/ednotes.richtext.bundle.js';
+RichText.attach('#notes', { historyLimit: 100 });
+</script>
+```
+
 ## [0.4.1] - 2025-09-02
 
 ### Fixed (0.4.1)
@@ -169,6 +221,6 @@ No other API changes in this release.
 
 ## [0.1.0] - 2025-08-29
 
-### Added
+### Initial Features
 
 - Initial release: secure, lightweight rich-text editor RCL targeting net8.0 & net472 with strict schema, client/server sanitization, accessibility, undo/redo, autosave, exports, list & task list support, link policy enforcement, table normalization, benchmarks, coverage & CI pipeline.

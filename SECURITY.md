@@ -9,7 +9,7 @@
 
 ## Reporting a Vulnerability
 
-Please email (add address in project profile) or open a *private* security advisory in GitHub (Security > Advisories) with:
+Please email or open a *private* security advisory in GitHub (Security > Advisories) with:
 
 - Affected version(s)
 - Reproduction steps / PoC HTML if relevant

@@ -1,0 +1,194 @@
+/* EdNotes RichText Editor - Base Styles & CSS Variables */
+
+:root {
+  /* Brand colors */
+  --rtx-color-primary: #2563eb;
+  --rtx-color-primary-hover: #1d4ed8;
+  --rtx-color-border: #d1d5db;
+  --rtx-color-border-focus: #2563eb;
+  
+  /* Background colors */
+  --rtx-color-bg: #ffffff;
+  --rtx-color-bg-toolbar: #f9fafb;
+  --rtx-color-bg-button: transparent;
+  --rtx-color-bg-button-hover: #f3f4f6;
+  --rtx-color-bg-button-active: #e5e7eb;
+  
+  /* Text colors */
+  --rtx-color-text: #111827;
+  --rtx-color-text-muted: #6b7280;
+  --rtx-color-text-button: #374151;
+  
+  /* Typography */
+  --rtx-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --rtx-font-size: 14px;
+  --rtx-line-height: 1.5;
+  
+  /* Spacing */
+  --rtx-spacing-xs: 4px;
+  --rtx-spacing-sm: 8px;
+  --rtx-spacing-md: 12px;
+  --rtx-spacing-lg: 16px;
+  
+  /* Borders & radius */
+  --rtx-border-width: 1px;
+  --rtx-border-radius: 6px;
+  --rtx-border-radius-sm: 4px;
+  
+  /* Shadows */
+  --rtx-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --rtx-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  
+  /* Focus ring */
+  --rtx-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Editor container */
+.rtx-editor {
+  font-family: var(--rtx-font-family);
+  font-size: var(--rtx-font-size);
+  line-height: var(--rtx-line-height);
+  background: var(--rtx-color-bg);
+  border: var(--rtx-border-width) solid var(--rtx-color-border);
+  border-radius: var(--rtx-border-radius);
+  box-shadow: var(--rtx-shadow-sm);
+}
+
+.rtx-editor:focus-within {
+  border-color: var(--rtx-color-border-focus);
+  box-shadow: var(--rtx-focus-ring);
+}
+
+/* Toolbar */
+.rtx-toolbar {
+  background: var(--rtx-color-bg-toolbar);
+  border-bottom: var(--rtx-border-width) solid var(--rtx-color-border);
+  padding: var(--rtx-spacing-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rtx-spacing-xs);
+  align-items: center;
+}
+
+.rtx-toolbar-group {
+  display: flex;
+  gap: var(--rtx-spacing-xs);
+  align-items: center;
+}
+
+.rtx-toolbar-group:not(:last-child)::after {
+  content: '';
+  width: 1px;
+  height: 20px;
+  background: var(--rtx-color-border);
+  margin-left: var(--rtx-spacing-sm);
+}
+
+/* Toolbar buttons */
+.rtx-button {
+  background: var(--rtx-color-bg-button);
+  border: var(--rtx-border-width) solid transparent;
+  border-radius: var(--rtx-border-radius-sm);
+  color: var(--rtx-color-text-button);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--rtx-spacing-xs) var(--rtx-spacing-sm);
+  font-size: var(--rtx-font-size);
+  line-height: 1;
+  transition: all 0.15s ease;
+  min-width: 32px;
+  height: 32px;
+}
+
+.rtx-button:hover {
+  background: var(--rtx-color-bg-button-hover);
+}
+
+.rtx-button:active,
+.rtx-button[aria-pressed="true"] {
+  background: var(--rtx-color-bg-button-active);
+}
+
+.rtx-button:focus-visible {
+  outline: none;
+  box-shadow: var(--rtx-focus-ring);
+}
+
+.rtx-button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Content area */
+.rtx-content {
+  padding: var(--rtx-spacing-md);
+  min-height: 200px;
+  outline: none;
+}
+
+.rtx-content:focus {
+  outline: none;
+}
+
+/* Live region for announcements */
+.rtx-live-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Theme: High Contrast */
+.rtx-editor.theme-high-contrast {
+  --rtx-color-bg: #000000;
+  --rtx-color-bg-toolbar: #1a1a1a;
+  --rtx-color-text: #ffffff;
+  --rtx-color-text-button: #ffffff;
+  --rtx-color-border: #ffffff;
+  --rtx-color-border-focus: #00ff00;
+  --rtx-color-primary: #00ff00;
+  --rtx-color-bg-button-hover: #333333;
+  --rtx-color-bg-button-active: #444444;
+}
+
+/* Theme: Professional */
+.rtx-editor.theme-professional {
+  --rtx-color-primary: #0f172a;
+  --rtx-color-primary-hover: #1e293b;
+  --rtx-color-bg-toolbar: #f8fafc;
+  --rtx-color-border: #e2e8f0;
+  --rtx-color-text: #0f172a;
+  --rtx-color-text-muted: #64748b;
+  --rtx-font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Theme: Dyslexia-friendly */
+.rtx-editor.theme-dyslexia {
+  --rtx-color-bg: #fefce8;
+  --rtx-color-bg-toolbar: #fef3c7;
+  --rtx-color-text: #1f2937;
+  --rtx-color-border: #d97706;
+  --rtx-font-family: 'Comic Sans MS', cursive;
+  --rtx-font-size: 16px;
+  --rtx-line-height: 1.8;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .rtx-toolbar {
+    flex-wrap: wrap;
+    padding: var(--rtx-spacing-xs);
+  }
+  
+  .rtx-button {
+    min-width: 36px;
+    height: 36px;
+  }
+  
+  .rtx-content {
+    padding: var(--rtx-spacing-sm);
+  }
+}

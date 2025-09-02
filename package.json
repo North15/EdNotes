@@ -1,15 +1,36 @@
 {
-  "name": "ednotes-richtext-dev",
-  "private": true,
+  "name": "@ednotes/richtext",
+  "version": "0.5.0",
+  "description": "Security-first, lightweight rich text editor with accessibility focus",
+  "main": "dist/ednotes.richtext.umd.js",
+  "module": "src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.api.js",
+  "types": "types/index.d.ts",
+  "private": false,
   "type": "module",
+  "keywords": ["rich-text", "editor", "accessibility", "security", "typescript"],
+  "author": "EdNotes",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/North15/EdNotes.git"
+  },
+  "files": [
+    "dist/",
+    "types/",
+    "src/EdNotes.RichText/wwwroot/editor/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "node -e \"require('fs').mkdirSync('artifacts/coverage/js',{recursive:true})\" && node --experimental-vm-modules node_modules/jest/bin/jest.js --config package.json --runInBand --coverage",
     "lint": "eslint src/EdNotes.RichText/wwwroot/editor/**/*.js",
     "lint:fix": "eslint src/EdNotes.RichText/wwwroot/editor/**/*.js --fix",
     "bench:normalize": "node scripts/bench-normalize.mjs 400",
-  "coverage:check": "node scripts/coverage-threshold.mjs",
-  "build:js": "rollup -c",
-  "build:js:prod": "rollup -c && ls dist"
+    "coverage:check": "node scripts/coverage-threshold.mjs",
+    "build:js": "rollup -c",
+    "build:js:prod": "rollup -c && ls dist",
+    "build": "npm run build:js",
+    "prepublishOnly": "npm run build && npm run test"
   },
   "jest-junit": {
     "outputDirectory": "artifacts/test-results/js",
