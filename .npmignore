@@ -1,0 +1,32 @@
+# NPM Ignore - Files to exclude from NPM package
+
+# Development files
+.github/
+artifacts/
+node_modules/
+tests/
+scripts/
+eslint.config.js
+rollup.config.mjs
+
+# .NET specific
+EdNotes.sln
+src/EdNotes.RichText/EdNotes.RichText.csproj
+src/EdNotes.RichText/wwwroot/samples/
+src/EdNotes.RichText/Models/
+src/EdNotes.RichText/Views/
+src/EdNotes.RichText/Extensions/
+src/EdNotes.RichText/Sanitizer/
+src/EdNotes.RichText/README.md
+
+# Documentation (not needed in package)
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+SECURITY.md
+docs/
+
+# Build artifacts (already included selectively)
+.git/
+.gitignore
+
+# Only include what's specified in package.json "files" array

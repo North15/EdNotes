@@ -7,12 +7,19 @@
   "types": "types/index.d.ts",
   "private": false,
   "type": "module",
-  "keywords": ["rich-text", "editor", "accessibility", "security", "typescript"],
+  "keywords": ["rich-text", "editor", "accessibility", "security", "typescript", "wysiwyg", "contenteditable", "html-editor", "text-editor", "blazor", "asp-net-core"],
   "author": "EdNotes",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/North15/EdNotes.git"
+  },
+  "homepage": "https://github.com/North15/EdNotes#readme",
+  "bugs": {
+    "url": "https://github.com/North15/EdNotes/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "files": [
     "dist/",
