@@ -37,7 +37,7 @@ describe.skip('EdNotesRichText improved development API', () => {
     const { EdNotesRichText } = await import('../../src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.api.js');
     
     expect(EdNotesRichText).toBeDefined();
-    expect(EdNotesRichText.version).toBe('0.5.0');
+    expect(EdNotesRichText.version).toBe('0.5.1');
     expect(typeof EdNotesRichText.init).toBe('function');
   });
 

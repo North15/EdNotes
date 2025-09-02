@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EdNotes Rich Text Editor - Documentation</title>
+    <link rel="stylesheet" href="ednotes.richtext.css">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -13,8 +14,8 @@
             padding: 20px;
             background: #f5f5f5;
         }
-    body.theme-high-contrast { background:#000; color:#fff; }
-    body.theme-dyslexia { font-family: 'Comic Sans MS', cursive; background:#f0f8ff; }
+        body.theme-high-contrast { background:#000; color:#fff; }
+        body.theme-dyslexia { font-family: 'Comic Sans MS', cursive; background:#f0f8ff; }
         .container {
             background: white;
             padding: 30px;
@@ -24,40 +25,34 @@
         h1, h2, h3 {
             color: #2c3e50;
         }
-        .theme-demo {
-            margin: 20px 0;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .demo-section {
+            margin: 30px 0;
+            padding: 25px;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            background: #fafafa;
         }
         .theme-selector {
             margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         .theme-selector button {
-            margin-right: 10px;
             padding: 8px 16px;
             border: 1px solid #ccc;
             background: white;
             cursor: pointer;
             border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .theme-selector button:hover {
+            background: #f8f9fa;
         }
         .theme-selector button.active {
             background: #007acc;
             color: white;
             border-color: #007acc;
-        }
-        .editor-container {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 10px;
-            min-height: 200px;
-        }
-        /* Theme support for demo page */
-        .editor-container {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 10px;
-            min-height: 200px;
         }
         .code-block {
             background: #f8f8f8;
@@ -67,6 +62,7 @@
             margin: 15px 0;
             font-family: 'Courier New', monospace;
             overflow-x: auto;
+            font-size: 14px;
         }
         .feature-list {
             display: grid;
@@ -78,7 +74,8 @@
             padding: 15px;
             border: 1px solid #e1e1e1;
             border-radius: 4px;
-            background: #fafafa;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .keyboard-shortcuts {
             display: grid;
@@ -98,90 +95,298 @@
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 0.9em;
+            font-family: monospace;
+        }
+        .api-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .api-example {
+            padding: 15px;
+            border: 1px solid #e1e1e1;
+            border-radius: 4px;
+        }
+        .api-example h4 {
+            margin-top: 0;
+            color: #007acc;
+        }
+        .new-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 8px;
+        }
+        .demo-controls {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-group label {
+            font-weight: 500;
+            color: #495057;
+        }
+        select {
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>EdNotes Rich Text Editor</h1>
-        <p>A secure, accessible rich text editor designed for education platforms.</p>
+        <h1>EdNotes Rich Text Editor <span class="new-badge">v0.5.1</span></h1>
+        <p>A security-first, accessible rich text editor with modern developer experience and industry-standard API patterns.</p>
 
-        <h2>Features</h2>
+        <h2>🚀 Key Features</h2>
         <div class="feature-list">
             <div class="feature-item">
-                <h3>🎯 Security First</h3>
-                <p>Built-in XSS protection with strict content sanitization</p>
+                <h3>🛡️ Security First</h3>
+                <p>Built-in XSS protection with dual client/server sanitization and strict allowlist schema</p>
             </div>
             <div class="feature-item">
                 <h3>♿ Accessibility</h3>
-                <p>WCAG 2.2 AA compliant with keyboard navigation and screen reader support</p>
+                <p>WCAG 2.2 AA compliant with keyboard navigation, screen reader support, and live announcements</p>
             </div>
             <div class="feature-item">
-                <h3>📱 Mobile Friendly</h3>
-                <p>Responsive design with touch-friendly controls</p>
+                <h3>� Modern API</h3>
+                <p>Industry-standard init() pattern with plugin system and declarative toolbar configuration</p>
+            </div>
+            <div class="feature-item">
+                <h3>🎨 CSS Variables</h3>
+                <p>Professional theming system with custom properties for colors, fonts, and spacing</p>
+            </div>
+            <div class="feature-item">
+                <h3>📱 Responsive</h3>
+                <p>Mobile-friendly design with touch controls and responsive toolbar layout</p>
             </div>
             <div class="feature-item">
                 <h3>∑ Math Support</h3>
-                <p>LaTeX equation rendering with KaTeX integration</p>
-            </div>
-            <div class="feature-item">
-                <h3>🎨 Education Themes</h3>
-                <p>High-contrast and dyslexia-friendly themes</p>
-            </div>
-            <div class="feature-item">
-                <h3>📋 Task Lists</h3>
-                <p>Interactive checklists with keyboard shortcuts</p>
+                <p>LaTeX equation rendering with KaTeX integration for STEM education</p>
             </div>
         </div>
 
-        <h2>Quick Start</h2>
+        <h2>📋 API Comparison</h2>
+        <div class="api-comparison">
+            <div class="api-example">
+                <h4>New Modern API <span class="new-badge">Recommended</span></h4>
+                <div class="code-block">
+&lt;script src="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.1/dist/ednotes.richtext.umd.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+EdNotesRichText.init({
+  selector: 'textarea',
+  plugins: 'core formatting lists links',
+  toolbar: 'undo redo | blocks | bold italic | link',
+  theme: 'professional'
+});
+&lt;/script&gt;
+                </div>
+            </div>
+            <div class="api-example">
+                <h4>Legacy API <span style="background: #6c757d;" class="new-badge">Still Supported</span></h4>
+                <div class="code-block">
+&lt;script type="module"&gt;
+import { RichText } from './ednotes.richtext.bundle.js';
+RichText.attach('#editor', {
+  historyLimit: 100,
+  onChange: html =&gt; console.log(html)
+});
+&lt;/script&gt;
+                </div>
+            </div>
+        </div>
+
+        <h2>🎮 Interactive Demo</h2>
+        <div class="demo-section">
+            <div class="demo-controls">
+                <div class="control-group">
+                    <label for="theme-select">Theme:</label>
+                    <select id="theme-select">
+                        <option value="default">Default</option>
+                        <option value="professional">Professional</option>
+                        <option value="high-contrast">High Contrast</option>
+                        <option value="dyslexia">Dyslexia Friendly</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="block-select">Block Type:</label>
+                    <select id="block-select">
+                        <option value="p">Paragraph</option>
+                        <option value="h1">Heading 1</option>
+                        <option value="h2">Heading 2</option>
+                        <option value="h3">Heading 3</option>
+                        <option value="blockquote">Quote</option>
+                        <option value="pre">Code Block</option>
+                    </select>
+                </div>
+                <button id="insert-math">Insert Math (∑x²)</button>
+                <button id="insert-table">Insert Table</button>
+            </div>
+            
+            <textarea id="demo-editor" style="width:100%;min-height:200px;resize:vertical;">
+&lt;h2&gt;Welcome to EdNotes RichText! &lt;span class="new-badge"&gt;v0.5.1&lt;/span&gt;&lt;/h2&gt;
+&lt;p&gt;This editor features a &lt;strong&gt;modern API&lt;/strong&gt; with:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Plugin system with declarative configuration&lt;/li&gt;
+  &lt;li&gt;CSS variables theming&lt;/li&gt;
+  &lt;li&gt;TypeScript declarations&lt;/li&gt;
+  &lt;li&gt;Industry-standard patterns&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Try the &lt;em&gt;theme selector&lt;/em&gt; and &lt;u&gt;block type dropdown&lt;/u&gt; above!&lt;/p&gt;
+            </textarea>
+        </div>
+
+        <h2>⌨️ Keyboard Shortcuts</h2>
+        <div class="keyboard-shortcuts">
+            <div class="shortcut">
+                <span>Bold</span>
+                <span class="kbd">Ctrl+B</span>
+            </div>
+            <div class="shortcut">
+                <span>Italic</span>
+                <span class="kbd">Ctrl+I</span>
+            </div>
+            <div class="shortcut">
+                <span>Underline</span>
+                <span class="kbd">Ctrl+U</span>
+            </div>
+            <div class="shortcut">
+                <span>Heading 1</span>
+                <span class="kbd">Ctrl+Alt+1</span>
+            </div>
+            <div class="shortcut">
+                <span>Heading 2</span>
+                <span class="kbd">Ctrl+Alt+2</span>
+            </div>
+            <div class="shortcut">
+                <span>Heading 3</span>
+                <span class="kbd">Ctrl+Alt+3</span>
+            </div>
+            <div class="shortcut">
+                <span>Paragraph</span>
+                <span class="kbd">Ctrl+Alt+0</span>
+            </div>
+            <div class="shortcut">
+                <span>Indent List</span>
+                <span class="kbd">Tab</span>
+            </div>
+            <div class="shortcut">
+                <span>Outdent List</span>
+                <span class="kbd">Shift+Tab</span>
+            </div>
+            <div class="shortcut">
+                <span>Undo</span>
+                <span class="kbd">Ctrl+Z</span>
+            </div>
+            <div class="shortcut">
+                <span>Redo</span>
+                <span class="kbd">Ctrl+Y</span>
+            </div>
+        </div>
+
+        <h2>📦 Installation</h2>
         <div class="code-block">
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-    &lt;link rel="stylesheet" href="editor.css"&gt;
-&lt;/head&gt;
-&lt;body&gt;
-    &lt;textarea id="editor"&gt;&lt;/textarea&gt;
-    &lt;script src="ednotes.richtext.bundle.js"&gt;&lt;/script&gt;
-    &lt;script&gt;
-        RichText.attach('#editor');
-    &lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
+# NPM
+npm install @ednotes/richtext
+
+# CDN
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.1/dist/ednotes.richtext.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.1/dist/ednotes.richtext.umd.min.js"&gt;&lt;/script&gt;
+
+# ASP.NET Core
+dotnet add package EdNotes.RichText
         </div>
 
-        <h2>Theme Demo</h2>
-        <div class="theme-demo">
-            <div class="theme-selector">
-                <button class="theme-btn active" data-theme="default">Default</button>
-                <button class="theme-btn" data-theme="high-contrast">High Contrast</button>
-                <button class="theme-btn" data-theme="dyslexia">Dyslexia Friendly</button>
-            </div>
-            <textarea id="demo-editor" style="width:100%;min-height:160px;">Welcome to <strong>EdNotes</strong> demo! Try the toolbar buttons above or add a math equation.</textarea>
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
-                <link rel="stylesheet" href="./editor.css?v=3">
-                <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
-                <script src="./ednotes.richtext.bundle.js?v=3"></script>
-                <script>
-                    (function(){
-                        function init(){
-                            if(!window.RichText){
-                                console.error('RichText bundle not loaded');
-                                return;
-                            }
-                            RichText.attach('#demo-editor');
-                            const themeButtons = document.querySelectorAll('.theme-btn');
-                            themeButtons.forEach(btn => btn.addEventListener('click', () => {
-                                themeButtons.forEach(b => b.classList.remove('active'));
-                                btn.classList.add('active');
-                                const theme = btn.dataset.theme;
-                                document.body.classList.remove('theme-high-contrast','theme-dyslexia');
-                                if(theme !== 'default') document.body.classList.add('theme-'+theme);
-                            }));
-                        }
-                        if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
-                    })();
-                </script>
+        <h2>🔗 Links</h2>
+        <ul>
+            <li><a href="https://github.com/North15/EdNotes">GitHub Repository</a></li>
+            <li><a href="https://www.npmjs.com/package/@ednotes/richtext">NPM Package</a></li>
+            <li><a href="tinymce-style-demo.html">Advanced Demo Page</a></li>
+            <li><a href="https://github.com/North15/EdNotes/blob/main/CHANGELOG.md">Changelog</a></li>
+        </ul>
+    </div>
+
+    <!-- Load KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Load our editor -->
+    <script src="ednotes.richtext.api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize editor with modern API
+            const editor = EdNotesRichText.init({
+                selector: '#demo-editor',
+                plugins: 'core formatting blocks lists links tables tasks math',
+                toolbar: 'undo redo | bold italic underline | link | numlist bullist task | table math | removeformat',
+                theme: 'default',
+                onChange: function(html) {
+                    console.log('Content changed:', html.substring(0, 100) + '...');
+                }
+            });
+
+            // Theme selector
+            const themeSelect = document.getElementById('theme-select');
+            themeSelect.addEventListener('change', function() {
+                const theme = this.value;
+                EdNotesRichText.applyTheme(theme);
+            });
+
+            // Block type selector
+            const blockSelect = document.getElementById('block-select');
+            blockSelect.addEventListener('change', function() {
+                const blockType = this.value;
+                // Apply the block type to current selection
+                if (blockType === 'p') {
+                    document.execCommand('formatBlock', false, 'p');
+                } else if (blockType.startsWith('h')) {
+                    document.execCommand('formatBlock', false, blockType);
+                } else if (blockType === 'blockquote') {
+                    document.execCommand('formatBlock', false, 'blockquote');
+                } else if (blockType === 'pre') {
+                    document.execCommand('formatBlock', false, 'pre');
+                }
+            });
+
+            // Math insertion button
+            document.getElementById('insert-math').addEventListener('click', function() {
+                const latex = prompt('Enter LaTeX expression:', 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}');
+                if (latex) {
+                    document.execCommand('insertHTML', false, `<math>\\(${latex}\\)</math>`);
+                }
+            });
+
+            // Table insertion button
+            document.getElementById('insert-table').addEventListener('click', function() {
+                const tableHTML = `
+                    <table>
+                        <thead>
+                            <tr><th>Header 1</th><th>Header 2</th><th>Header 3</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td></tr>
+                            <tr><td>Cell 4</td><td>Cell 5</td><td>Cell 6</td></tr>
+                        </tbody>
+                    </table>
+                `;
+                document.execCommand('insertHTML', false, tableHTML);
+            });
+        });
+    </script>
 </body>
 </html></content>

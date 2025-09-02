@@ -18,7 +18,7 @@ const defaultConfig = {
 
 // Global namespace object
 const EdNotesRichText = {
-    version: '0.5.0',
+    version: '0.5.1',
     
     // TinyMCE-style initialization
     init(config = {}) {

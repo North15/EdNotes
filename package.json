@@ -1,6 +1,6 @@
 {
   "name": "@ednotes/richtext",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Security-first, lightweight rich text editor with accessibility focus",
   "main": "dist/ednotes.richtext.umd.js",
   "module": "src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.api.js",

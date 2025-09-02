@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.1] - 2025-09-02
+
+### Changed (0.5.1)
+
+- **NPM Package Optimization**: Enhanced package.json with homepage, bugs tracking, and Node.js engine requirements.
+- **Improved Discoverability**: Added comprehensive keywords for better NPM search results (wysiwyg, contenteditable, html-editor, blazor, asp-net-core).
+- **Package Size Optimization**: Added .npmignore to exclude development files, reducing package size and install time.
+- **Publishing Pipeline**: Validated package structure with npm pack, ensuring reliable distribution.
+
+### Internal (0.5.1)
+
+- Package contents optimized to 428.2 kB compressed (21 files) excluding tests and build artifacts.
+- Node.js >= 16.0.0 requirement specified for modern JavaScript features.
+- prepublishOnly script ensures build and test validation before publishing.
+
+### Migration Notes (0.5.1)
+
+No breaking changes. All existing integrations continue to work unchanged. This is purely a packaging and metadata improvement for NPM distribution.
+
 ## [0.5.0] - 2025-09-02
 
 ### Added (0.5.0)

@@ -140,7 +140,7 @@ const RichText = {
 };
 
 // Version injected manually (consider automated replacement in future build step)
-RichText.version = '0.5.0';
+RichText.version = '0.5.1';
 
 function blockCommand(tag){
 	return (ed)=>{
