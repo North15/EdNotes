@@ -118,12 +118,27 @@ jobs:
                 if [ -z "$GIST_TOKEN" ]; then
                   echo "⚠️ GIST_TOKEN not set; skipping upload."; continue;
                 fi
-                payload=$(cat "$file" | sed 's/"/\\"/g')
-                resp=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X PATCH \
-                  -H "Authorization: token $GIST_TOKEN" \
-                  -H "Accept: application/vnd.github.v3+json" \
-                  "https://api.github.com/gists/$BADGE_GIST_ID" \
-                  -d "{\"files\":{\"$filename\":{\"content\":\"$payload\"}}}")
+                # Properly JSON-encode file content (handles quotes, newlines) using jq
+                if command -v jq >/dev/null 2>&1; then
+                  encoded=$(jq -Rs . < "$file")
+                  resp=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X PATCH \
+                    -H "Authorization: token $GIST_TOKEN" \
+                    -H "Accept: application/vnd.github.v3+json" \
+                    "https://api.github.com/gists/$BADGE_GIST_ID" \
+                    -d "{\"files\":{\"$filename\":{\"content\":$encoded}}}")
+                else
+                  # Fallback: minimal escaping (may fail with complex JSON); recommend keeping jq available
+                  payload=$(python - <<'PY'
+  import json,sys
+  print(json.dumps(open(sys.argv[1],'r',encoding='utf-8').read()))
+  PY
+  "$file")
+                  resp=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X PATCH \
+                    -H "Authorization: token $GIST_TOKEN" \
+                    -H "Accept: application/vnd.github.v3+json" \
+                    "https://api.github.com/gists/$BADGE_GIST_ID" \
+                    -d "{\"files\":{\"$filename\":{\"content\":$payload}}}")
+                fi
                 if [ "$resp" != "200" ]; then
                   echo "❌ Failed to upload $filename (HTTP $resp)"; cat /tmp/resp.json; exit 1;
                 else
