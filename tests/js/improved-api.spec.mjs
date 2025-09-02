@@ -41,7 +41,7 @@ describe.skip('EdNotesRichText improved development API', () => {
     expect(typeof EdNotesRichText.init).toBe('function');
   });
 
-  it('should initialize with TinyMCE-style config', async () => {
+  it('should initialize with modern API config', async () => {
     const { EdNotesRichText } = await import('../../src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.api.js');
     
     // Debug: ensure element exists

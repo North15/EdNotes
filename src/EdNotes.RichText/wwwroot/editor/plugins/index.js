@@ -1,5 +1,5 @@
 // Plugin registry for EdNotes RichText Editor
-// Provides TinyMCE-style plugin system with declarative toolbar configuration
+// Provides modern plugin system with declarative toolbar configuration
 
 const plugins = new Map();
 const toolbarButtons = new Map();

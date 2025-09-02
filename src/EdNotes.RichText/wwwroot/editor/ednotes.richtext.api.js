@@ -1,5 +1,5 @@
 // Modern API wrapper for EdNotes RichText Editor
-// Provides TinyMCE-style init() interface with plugin system
+// Provides industry-standard init() interface with plugin system
 
 import { RichText } from './ednotes.richtext.bundle.js';
 import { registerPlugin, parseToolbar, validatePlugins } from './plugins/index.js';
@@ -20,7 +20,7 @@ const defaultConfig = {
 const EdNotesRichText = {
     version: '0.5.1',
     
-    // TinyMCE-style initialization
+    // Industry-standard initialization
     init(config = {}) {
         const finalConfig = { ...defaultConfig, ...config };
         

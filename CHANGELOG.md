@@ -28,7 +28,7 @@ No breaking changes. All existing integrations continue to work unchanged. This 
 - **Toolbar DSL**: String-based toolbar configuration with pipe-separated groups (e.g., `'undo redo | bold italic | link'`).
 - **CSS Variables Theming**: Professional theming system with CSS custom properties for colors, fonts, spacing.
 - **TypeScript Support**: Complete TypeScript declarations for improved developer experience.
-- **NPM Package**: Published as `@ednotes/richtext` with CDN support via jsDelivr.
+- **NPM Package**: Published as `ednotes-richtext` with CDN support via jsDelivr.
 - **Enhanced Loader**: Auto-injecting CSS loader with fallback support for modern and legacy browsers.
 - **Framework Ready**: Structured for future React/Blazor wrapper components.
 
@@ -51,8 +51,8 @@ No breaking changes. All existing integrations continue to work unchanged. This 
 
 ```html
 <!-- CDN -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.0/dist/ednotes.richtext.css">
-<script src="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.0/dist/ednotes.richtext.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.1/dist/ednotes.richtext.css">
+<script src="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.1/dist/ednotes.richtext.umd.min.js"></script>
 <script>
 EdNotesRichText.init({
   selector: 'textarea',

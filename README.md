@@ -1,14 +1,12 @@
 # EdNotes Rich Text Editor
 
 ![CI](https://github.com/North15/EdNotes/actions/workflows/ci.yml/badge.svg)
-![NPM Version](https://img.shields.io/npm/v/@ednotes/richtext.svg)
+![NPM Version](https://img.shields.io/npm/v/ednotes-richtext.svg)
 ![NuGet](https://img.shields.io/nuget/v/EdNotes.RichText.svg)
 ![Package Version](https://img.shields.io/badge/version-0.5.1-informational.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-A **TinyMCE-style** rich text editor with security-first design, accessibility focus, and modern developer experience. Plugin system, declarative toolbar, CSS variables theming, and TypeScript support.
-
-� **[Try the Live Demo](docs/tinymce-style-demo.html)** - Interactive playground with theme switching
+A rich text editor with security-first design, accessibility focus, and modern developer experience. Plugin system, declarative toolbar, CSS variables theming, and TypeScript support.
 
 ## ⚡ Quick Start
 
@@ -16,13 +14,13 @@ A **TinyMCE-style** rich text editor with security-first design, accessibility f
 
 ```html
 <!-- Include CSS and JS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.1/dist/ednotes.richtext.css">
-<script src="https://cdn.jsdelivr.net/npm/@ednotes/richtext@0.5.1/dist/ednotes.richtext.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.1/dist/ednotes.richtext.css">
+<script src="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.1/dist/ednotes.richtext.umd.min.js"></script>
 
 <!-- Your textarea -->
 <textarea id="content">Start typing...</textarea>
 
-<!-- Initialize (TinyMCE-style) -->
+<!-- Initialize -->
 <script>
 EdNotesRichText.init({
   selector: '#content',
@@ -35,11 +33,11 @@ EdNotesRichText.init({
 ### NPM
 
 ```bash
-npm install @ednotes/richtext
+npm install ednotes-richtext
 ```
 
 ```javascript
-import EdNotesRichText from '@ednotes/richtext';
+import EdNotesRichText from 'ednotes-richtext';
 
 EdNotesRichText.init({
   selector: 'textarea',
