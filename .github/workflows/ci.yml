@@ -100,7 +100,8 @@ jobs:
         run: node scripts/update-badges.mjs
 
       - name: Upload Badges to Gist
-        if: success() && runner.os == 'Linux' && secrets.BADGE_GIST_ID != ''
+        # Use explicit expression syntax so 'secrets' context is parsed correctly
+        if: ${{ success() && runner.os == 'Linux' && secrets.BADGE_GIST_ID != '' }}
         env:
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
           BADGE_GIST_ID: ${{ secrets.BADGE_GIST_ID }}
