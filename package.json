@@ -46,7 +46,7 @@
     "jest-environment-jsdom": "29.7.0",
     "jest-junit": "16.0.0",
   "jsdom": "22.1.0",
-  "rollup": "4.21.2"
+  "rollup": "4.50.0"
   },
   "dependencies": {
     "katex": "^0.16.22"
