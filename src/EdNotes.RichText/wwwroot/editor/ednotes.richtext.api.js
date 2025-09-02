@@ -2,7 +2,7 @@
 // Provides TinyMCE-style init() interface with plugin system
 
 import { RichText } from './ednotes.richtext.bundle.js';
-import { registerPlugin, parseToolbar, getToolbarButton, validatePlugins } from './plugins/index.js';
+import { registerPlugin, parseToolbar, validatePlugins } from './plugins/index.js';
 
 // Default configuration
 const defaultConfig = {
@@ -32,8 +32,8 @@ const EdNotesRichText = {
             console.warn(`[EdNotes.RichText] Unknown plugins: ${invalidPlugins.join(', ')}`);
         }
         
-        // Parse toolbar
-        const toolbarGroups = parseToolbar(finalConfig.toolbar);
+        // Parse toolbar (for future use with plugin system)
+        parseToolbar(finalConfig.toolbar);
         
         // Convert to RichText.attach format
         const attachOptions = {
@@ -44,8 +44,8 @@ const EdNotesRichText = {
             promptLink: finalConfig.promptLink
         };
         
-        // Initialize with backward compatibility - RichText.attach returns count, not instances
-        const count = RichText.attach(finalConfig.selector, attachOptions);
+        // Initialize with backward compatibility
+        RichText.attach(finalConfig.selector, attachOptions);
         
         // Apply theme if specified
         if (finalConfig.theme && finalConfig.theme !== 'default') {
