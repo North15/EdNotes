@@ -47,7 +47,7 @@ export interface InitConfig {
   history?: HistoryConfig;
   paste?: PasteConfig;
   a11y?: A11yConfig;
-  theme?: 'default' | 'high-contrast' | 'professional' | 'dyslexia' | string;
+  theme?: "default" | "high-contrast" | "professional" | "dyslexia" | string;
   onChange?: (html: string) => void;
   onReady?: (editor: EditorInstance) => void;
   onDestroy?: (editor: EditorInstance) => void;
@@ -62,7 +62,7 @@ export interface PluginButton {
   label?: string;
   command?: string;
   run?: (editor: EditorInstance) => void;
-  type?: 'button' | 'dropdown';
+  type?: "button" | "dropdown";
   options?: Array<PluginButton>;
   shortcut?: string;
   dropdown?: boolean;
@@ -81,30 +81,32 @@ export type ToolbarLayout = ToolbarButtonGroup[];
 
 export interface EdNotesRichTextAPI {
   readonly version: string;
-  
+
   // Primary API
   init(config?: InitConfig): EditorInstance[];
-  
+
   // Plugin management
   registerPlugin(name: string, definition: PluginDefinition): void;
-  
-  // Theme management  
+
+  // Theme management
   applyTheme(themeName: string): void;
-  
+
   // Instance management
   get(selector: string | HTMLElement): EditorInstance | undefined;
-  destroy(selector?: string | HTMLElement | NodeListOf<HTMLElement> | HTMLElement[]): void;
-  
+  destroy(
+    selector?: string | HTMLElement | NodeListOf<HTMLElement> | HTMLElement[]
+  ): void;
+
   // Global operations
   undo(): void;
   redo(): void;
   triggerSave(): void;
-  
+
   // Export helpers
   exportAllPlain(): string[];
   exportAllMarkdown(): string[];
   exportAllHTML(): string[];
-  
+
   // Internal (testing)
   _plugins(): any;
   _instances(): EditorInstance[];
@@ -112,20 +114,25 @@ export interface EdNotesRichTextAPI {
 
 // Legacy API (backward compatibility)
 export interface RichTextLegacyAPI {
-  attach(selector: string, options?: {
-    historyLimit?: number;
-    onChange?: (html: string) => void;
-    autosaveIntervalMs?: number;
-    onAutosave?: (html: string) => void;
-    promptLink?: () => string | null;
-    promptMath?: () => string | null;
-    toolbarLayout?: ToolbarLayout;
-  }): EditorInstance[];
-  
+  attach(
+    selector: string,
+    options?: {
+      historyLimit?: number;
+      onChange?: (html: string) => void;
+      autosaveIntervalMs?: number;
+      onAutosave?: (html: string) => void;
+      promptLink?: () => string | null;
+      promptMath?: () => string | null;
+      toolbarLayout?: ToolbarLayout;
+    }
+  ): EditorInstance[];
+
   undo(): void;
   redo(): void;
   triggerSave(): void;
-  destroy(selector?: string | HTMLElement | NodeListOf<HTMLElement> | HTMLElement[]): void;
+  destroy(
+    selector?: string | HTMLElement | NodeListOf<HTMLElement> | HTMLElement[]
+  ): void;
   exportAllPlain(): string[];
   exportAllMarkdown(): string[];
   exportAllHTML(): string[];
