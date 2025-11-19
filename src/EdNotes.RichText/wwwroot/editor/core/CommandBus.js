@@ -4,8 +4,12 @@ import { captureBookmark, restoreBookmark } from './Selection.js';
 export class CommandBus {
   constructor(editor){ this.editor = editor; this._registry = new Map(); }
   register(name, fn){ this._registry.set(name, fn); }
-  exec(name, opts){ const cmd=this._registry.get(name); if(!cmd) return false; this.editor._transaction((ed)=>cmd(ed, opts||{}));
-    if(name !== 'noop' && this.editor._live) {
+  exec(name, opts={}, meta={}){ const cmd=this._registry.get(name); if(!cmd) return false;
+    const commandArgs = opts || {};
+    const pushHistory = meta.pushHistory ?? (name !== 'noop');
+    this.editor._transaction((ed)=>cmd(ed, commandArgs), { pushHistory });
+    const announce = meta.announce ?? (name !== 'noop');
+    if(announce && this.editor._live) {
       const friendly = name.replace('strong','bold').replace('em','italic').replace('u','underline').replace('block:','heading ').replace('list:','list ').replace('link:','link ');
       this.editor._live.textContent = `Applied ${friendly}`;
     }
@@ -63,6 +67,7 @@ export class EditorCore {
   // Ensure noop command exists for tests / internal refresh triggers
   this.bus.register('noop', () => {});
   this.history = { stack: [], index: -1, batching: false, lastTypeTs: 0, limit: (this.options.historyLimit||100) };
+    this._handlers = {};
     this._setInterval = this.options._setInterval || setInterval;
     if(this.options.autosaveIntervalMs){
       this._autosaveTimer = this._setInterval(()=>{
@@ -84,15 +89,16 @@ export class EditorCore {
   }
   _wire(){
     // Input (typing) -> transactional with batching
-    this.content.addEventListener('input', ()=> {
+    this._handlers.input = ()=> {
       const now = performance.now();
       const gap = now - this.history.lastTypeTs;
       const shouldNewEntry = gap > 600; // simple idle threshold
   this._transaction(()=>{}, { pushHistory: shouldNewEntry });
       this.history.lastTypeTs = now;
-    });
+    };
+    this.content.addEventListener('input', this._handlers.input);
     // Paste pipeline
-    this.content.addEventListener('paste', e => {
+    this._handlers.paste = e => {
       e.preventDefault();
       const html = e.clipboardData && e.clipboardData.getData('text/html');
       const text = e.clipboardData && e.clipboardData.getData('text/plain');
@@ -106,9 +112,10 @@ export class EditorCore {
           document.execCommand('insertText', false, text);
         }
       }, { pushHistory: true });
-    });
+    };
+    this.content.addEventListener('paste', this._handlers.paste);
     // Keyboard shortcuts
-    this.content.addEventListener('keydown', e => {
+    this._handlers.keydown = e => {
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
       
@@ -154,8 +161,11 @@ export class EditorCore {
       if(key === 'tab'){
         if(this._maybeHandleListIndent(e)) return; // prevent default inside handler
       }
-    });
+    };
+    this.content.addEventListener('keydown', this._handlers.keydown);
     this.content.innerHTML = this.textarea.value || '<p></p>';
+    normalize(this.content);
+    this.textarea.value = this.serialize();
     this._pushHistory();
   }
   _transaction(worker, opts={}){
@@ -244,6 +254,13 @@ export class EditorCore {
     }
   }
   serialize(){ return this.content.innerHTML; }
+  getHTML(){ return this.serialize(); }
+  setHTML(html){
+    this.content.innerHTML = html || '<p></p>';
+    normalize(this.content);
+    this.textarea.value = this.serialize();
+    this._pushHistory();
+  }
   triggerSave(){ this.textarea.value = this.serialize(); }
   exportPlainText(){
     // Basic block separation by newlines
@@ -273,5 +290,23 @@ export class EditorCore {
   exportHTML(){
     return this.content.innerHTML;
   }
+  getPlain(){ return this.exportPlainText(); }
+  getMarkdown(){ return this.exportMarkdown(); }
+  focus(){ this.content.focus(); }
   dispose(){ if(this._autosaveTimer) clearInterval(this._autosaveTimer); }
+  destroy(){
+    this.dispose();
+    if(this._handlers){
+      if(this._handlers.input) this.content.removeEventListener('input', this._handlers.input);
+      if(this._handlers.paste) this.content.removeEventListener('paste', this._handlers.paste);
+      if(this._handlers.keydown) this.content.removeEventListener('keydown', this._handlers.keydown);
+    }
+    this.triggerSave();
+    if(this.root && this.root.parentNode){
+      this.root.parentNode.removeChild(this.root);
+    }
+    this.textarea.style.display = '';
+    this.textarea.removeAttribute('data-rtx-source');
+    this.textarea._rtxAttached = false;
+  }
 }

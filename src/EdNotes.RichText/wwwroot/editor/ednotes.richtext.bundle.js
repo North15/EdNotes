@@ -8,39 +8,129 @@ import katex from 'katex';
 const instances = new Set();
 function _all(){ return Array.from(instances); }
 
-function mountToolbar(editor){
+const LEGACY_TOOLBAR_LAYOUT = [
+	[
+		{ name:'undo', text:'↺', aria:'Undo', action:'undo' },
+		{ name:'redo', text:'↻', aria:'Redo', action:'redo' }
+	],
+	[
+		{ name:'paragraph', text:'P', aria:'Paragraph', command:'block:p' },
+		{ name:'h1', text:'H1', aria:'Heading 1', command:'block:h1' },
+		{ name:'h2', text:'H2', aria:'Heading 2', command:'block:h2' },
+		{ name:'h3', text:'H3', aria:'Heading 3', command:'block:h3' }
+	],
+	[
+		{ name:'bold', text:'B', aria:'Bold', command:'strong' },
+		{ name:'italic', text:'I', aria:'Italic', command:'em' },
+		{ name:'underline', text:'U', aria:'Underline', command:'u' }
+	],
+	[
+		{ name:'bullist', text:'•', aria:'Bullet List', command:'list:ul' },
+		{ name:'numlist', text:'1.', aria:'Numbered List', command:'list:ol' }
+	],
+	[
+		{ name:'table', text:'⌗', aria:'Insert Table', command:'table:insert' }
+	],
+	[
+		{ name:'link', text:'🔗', aria:'Add Link', command:'link:add' },
+		{ name:'unlink', text:'✖', aria:'Remove Link', command:'link:remove' }
+	],
+	[
+		{ name:'task', text:'☑', aria:'Task List', command:'list:task' },
+		{ name:'math', text:'∑', aria:'Math Equation', command:'math:add' }
+	],
+	[
+		{ name:'removeformat', text:'⌫', aria:'Clear Formatting', command:'format:clear' }
+	]
+];
+
+function cloneLegacyLayout(){
+	return LEGACY_TOOLBAR_LAYOUT.map(group => group.map(btn => ({ ...btn })));
+}
+
+function mountToolbar(editor, layout){
 	const tb = editor.root.querySelector('.rtx-toolbar');
 	if(!tb) return;
-	const buttons = [
-		{ label:'B', aria:'Bold', cmd:'strong', mark:'strong' },
-		{ label:'I', aria:'Italic', cmd:'em', mark:'em' },
-		{ label:'U', aria:'Underline', cmd:'u', mark:'u' },
-		{ label:'P', aria:'Paragraph', cmd:'block:p', block:'p' },
-		{ label:'H1', aria:'Heading 1', cmd:'block:h1', block:'h1' },
-		{ label:'H2', aria:'Heading 2', cmd:'block:h2', block:'h2' },
-		{ label:'H3', aria:'Heading 3', cmd:'block:h3', block:'h3' },
-		{ label:'•', aria:'Bullet List', cmd:'list:ul', list:'ul' },
-		{ label:'1.', aria:'Numbered List', cmd:'list:ol', list:'ol' },
-		{ label:'🔗', aria:'Add Link', cmd:'link:add' },
-		{ label:'✖', aria:'Remove Link', cmd:'link:remove' },
-		{ label:'☑', aria:'Task List', cmd:'list:task' },
-		{ label:'∑', aria:'Math Equation', cmd:'math:add' }
-	];
-	const btnEls=[];
-	buttons.forEach((b,i)=>{
-		const btn=document.createElement('button');
-		btn.type='button'; btn.textContent=b.label; btn.setAttribute('aria-label',b.aria); btn.dataset.cmd=b.cmd; btn.tabIndex = i===0?0:-1;
-		btn.addEventListener('click',()=> editor.bus.exec(b.cmd));
-		btn.addEventListener('keydown', e=>{
-			if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
-				e.preventDefault();
-				const dir = e.key==='ArrowRight'?1:-1;
-				let idx = btnEls.indexOf(btn)+dir; if(idx<0) idx=btnEls.length-1; if(idx>=btnEls.length) idx=0;
-				btnEls.forEach(b2=> b2.tabIndex=-1); btnEls[idx].tabIndex=0; btnEls[idx].focus();
-			}
+	tb.innerHTML = '';
+	const focusables = [];
+	const groups = (layout && layout.length) ? layout : cloneLegacyLayout();
+	groups.forEach(group => {
+		if(!Array.isArray(group) || group.length===0) return;
+		const groupEl = document.createElement('div');
+		groupEl.className = 'rtx-toolbar-group';
+		group.forEach(def => {
+			const control = def && def.type === 'dropdown'
+				? createDropdownControl(editor, def, focusables)
+				: createButtonControl(editor, def, focusables);
+			if(control) groupEl.appendChild(control);
 		});
-		tb.appendChild(btn); btnEls.push(btn);
+		if(groupEl.children.length) tb.appendChild(groupEl);
 	});
+}
+
+function createButtonControl(editor, def, focusables){
+	if(!def) return null;
+	const btn=document.createElement('button');
+	btn.type='button';
+	btn.textContent = def.text || def.icon || def.label || def.name || 'Button';
+	btn.setAttribute('aria-label', def.aria || def.label || def.name || btn.textContent);
+	if(def.name) btn.dataset.plugin = def.name;
+	if(def.command) btn.dataset.cmd = def.command;
+	if(def.action) btn.dataset.action = def.action;
+	if(def.disabled) btn.disabled = true;
+	btn.addEventListener('click', ()=> handleToolbarAction(editor, def));
+	registerRovingControl(btn, focusables);
+	return btn;
+}
+
+function createDropdownControl(editor, def, focusables){
+	const select = document.createElement('select');
+	select.setAttribute('aria-label', def.label || def.name || 'Options');
+	const placeholder = document.createElement('option');
+	placeholder.value = '';
+	placeholder.textContent = def.label || def.name || 'Select';
+	placeholder.disabled = true;
+	placeholder.selected = true;
+	select.appendChild(placeholder);
+	(def.options || []).forEach(opt => {
+		const optionEl = document.createElement('option');
+		optionEl.value = opt.value || opt.command || opt.name;
+		optionEl.textContent = opt.label || opt.name || optionEl.value;
+		select.appendChild(optionEl);
+	});
+	select.addEventListener('change', ()=>{
+		const idx = select.selectedIndex - 1; // account for placeholder
+		if(idx >= 0 && def.options && def.options[idx]){
+			handleToolbarAction(editor, def.options[idx]);
+		}
+		select.selectedIndex = 0;
+	});
+	registerRovingControl(select, focusables);
+	return select;
+}
+
+function registerRovingControl(el, focusables){
+	const isFirst = focusables.length === 0;
+	el.tabIndex = isFirst ? 0 : -1;
+	focusables.push(el);
+	el.addEventListener('keydown', e=>{
+		if(e.key!=='ArrowRight' && e.key!=='ArrowLeft') return;
+		e.preventDefault();
+		const dir = e.key==='ArrowRight'?1:-1;
+		let idx = focusables.indexOf(el)+dir;
+		if(idx<0) idx = focusables.length-1;
+		if(idx>=focusables.length) idx = 0;
+		focusables.forEach((control,i)=>{ control.tabIndex = i===idx ? 0 : -1; });
+		focusables[idx].focus();
+	});
+}
+
+function handleToolbarAction(editor, def){
+	if(!def) return;
+	if(typeof def.run === 'function'){ def.run(editor); return; }
+	if(def.action === 'undo'){ editor.undo(); return; }
+	if(def.action === 'redo'){ editor.redo(); return; }
+	if(def.command){ editor.bus.exec(def.command); }
 }
 
 export const RichText = {
@@ -52,7 +142,8 @@ export const RichText = {
 		}
 		nodes.forEach(t=>{
 			if(t._rtxAttached) return; t._rtxAttached=true;
-			const ed = new EditorCore(t, options);
+			const { toolbarLayout, promptLink, promptMath, ...editorOptions } = options;
+			const ed = new EditorCore(t, editorOptions);
 			ed.bus.register('strong', markCommand('strong'));
 			ed.bus.register('em', markCommand('em'));
 			ed.bus.register('u', markCommand('u'));
@@ -62,13 +153,18 @@ export const RichText = {
 			ed.bus.register('block:h3', blockCommand('h3'));
 			ed.bus.register('list:ul', listCommand('ul'));
 			ed.bus.register('list:ol', listCommand('ol'));
-			ed.bus.register('link:add', linkAddCommand(options));
+			ed.bus.register('link:add', linkAddCommand({ promptLink }));
 			ed.bus.register('link:remove', linkRemoveCommand());
 			ed.bus.register('list:task', taskListCommand());
-			ed.bus.register('math:add', mathCommand(options));
-			mountToolbar(ed);
+			ed.bus.register('math:add', mathCommand({ promptMath }));
+			ed.bus.register('format:clear', clearFormatCommand());
+			ed.bus.register('table:insert', tableInsertCommand());
+			const layout = Array.isArray(toolbarLayout) ? toolbarLayout : null;
+			mountToolbar(ed, layout);
 			ed.root.setAttribute('data-rtx-attached','true');
 			t.setAttribute('data-rtx-source','true');
+			const originalDestroy = ed.destroy.bind(ed);
+			ed.destroy = ()=>{ originalDestroy(); instances.delete(ed); };
 			instances.add(ed);
 		});
 		return nodes.length;
@@ -79,6 +175,25 @@ export const RichText = {
 	exportAllPlain(){ return _all().map(i=> i.exportPlainText()); },
 	exportAllMarkdown(){ return _all().map(i=> i.exportMarkdown()); },
 	exportAllHTML(){ return _all().map(i=> i.exportHTML()); },
+	destroy(selector){
+		if(!selector){
+			instances.forEach(i=> i.destroy());
+			instances.clear();
+			return;
+		}
+		const targets = typeof selector === 'string'
+			? document.querySelectorAll(selector)
+			: (selector instanceof NodeList || Array.isArray(selector))
+				? selector
+				: [selector];
+		Array.from(targets).forEach(el => {
+			const instance = _all().find(inst => inst.textarea === el || inst.root === el || inst.content === el);
+			if(instance){
+				instance.destroy();
+				instances.delete(instance);
+			}
+		});
+	},
 	enforceLinkPolicy,
 	_all,
 	_clearInstances: () => instances.clear(),
@@ -124,18 +239,20 @@ function listCommand(listTag){
 		}
 	};
 }
-function linkAddCommand(options){
-	return (ed)=>{
+function linkAddCommand({ promptLink } = {}){
+	const promptFn = typeof promptLink === 'function'
+		? promptLink
+		: ()=> (typeof window.prompt==='function'? window.prompt('Enter URL (https://...)','https://') : null);
+	return ()=>{
 		const sel = document.getSelection(); if(!sel || sel.rangeCount===0) return;
-		const url = (options && options.promptLink)? options.promptLink() : (typeof window.prompt==='function'? window.prompt('Enter URL (https://...)','https://') : null);
+		const url = promptFn();
 		if(!url) return;
 		const a=document.createElement('a'); a.href=url; enforceLinkPolicy(a);
 		const range = sel.getRangeAt(0);
-		if(range.collapsed){ a.textContent=url; range.insertNode(a); sel.collapse(a, a.childNodes.length); }
+		if(range.collapsed){ a.textContent=url; range.insertNode(a); }
 		else {
 			const txt=range.extractContents(); a.appendChild(txt); range.insertNode(a);
 		}
-		ed.bus.exec('noop');
 	};
 }
 function linkRemoveCommand(){
@@ -145,7 +262,6 @@ function linkRemoveCommand(){
 		while(node && node!==ed.content && (!node.tagName || node.tagName.toLowerCase()!=='a')) node=node.parentNode;
 		if(node && node.tagName && node.tagName.toLowerCase()==='a'){
 			const parent=node.parentNode; while(node.firstChild) parent.insertBefore(node.firstChild, node); node.remove();
-			ed._transaction(()=>{}, { pushHistory: true });
 		}
 	};
 }
@@ -165,10 +281,13 @@ function taskListCommand(){
 		}
 	};
 }
-function mathCommand(options){
-	return (ed)=>{
+function mathCommand({ promptMath } = {}){
+	const promptFn = typeof promptMath === 'function'
+		? promptMath
+		: ()=> (typeof window.prompt==='function'? window.prompt('Enter LaTeX:','x^2') : null);
+	return ()=>{
 		const sel = document.getSelection(); if(!sel || sel.rangeCount===0) return;
-		const latex = (options && options.promptMath)? options.promptMath() : (typeof window.prompt==='function'? window.prompt('Enter LaTeX:','x^2') : null);
+		const latex = promptFn();
 		if(!latex) return;
 		const span = document.createElement('span');
 		span.className = 'math';
@@ -181,8 +300,55 @@ function mathCommand(options){
 		const range = sel.getRangeAt(0);
 		range.deleteContents();
 		range.insertNode(span);
-		sel.collapse(span.nextSibling || span, 0);
-		ed.bus.exec('noop');
+	};
+}
+
+function clearFormatCommand(){
+	return ()=>{
+		if(typeof document.execCommand === 'function'){
+			try {
+				document.execCommand('removeFormat');
+				return;
+			} catch(_) { /* fall back */ }
+		}
+		const sel = document.getSelection(); if(!sel || sel.rangeCount===0) return;
+		const range = sel.getRangeAt(0);
+		const frag = range.extractContents();
+		const walker = document.createTreeWalker(frag, NodeFilter.SHOW_ELEMENT, null);
+		const toUnwrap = [];
+		while(walker.nextNode()){
+			const el = walker.currentNode;
+			const tag = el.tagName && el.tagName.toLowerCase();
+			if(tag==='strong' || tag==='em' || tag==='u') toUnwrap.push(el);
+		}
+		toUnwrap.forEach(el => {
+			const parent = el.parentNode;
+			if(!parent) return;
+			while(el.firstChild) parent.insertBefore(el.firstChild, el);
+			el.remove();
+		});
+		range.insertNode(frag);
+	};
+}
+
+function tableInsertCommand(){
+	return ()=>{
+		const sel = document.getSelection(); if(!sel || sel.rangeCount===0) return;
+		const range = sel.getRangeAt(0);
+		const table = document.createElement('table');
+		const tbody = document.createElement('tbody');
+		for(let r=0;r<2;r++){
+			const tr = document.createElement('tr');
+			for(let c=0;c<2;c++){
+				const td = document.createElement('td');
+				td.innerHTML = '<br />';
+				tr.appendChild(td);
+			}
+			tbody.appendChild(tr);
+		}
+		table.appendChild(tbody);
+		range.deleteContents();
+		range.insertNode(table);
 	};
 }
 if(typeof window!== 'undefined') window.RichText = RichText;

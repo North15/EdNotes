@@ -58,4 +58,13 @@ public class SanitizerEdgeCasesTests
         Assert.Contains("hi", outHtml);
         Assert.Contains("there", outHtml);
     }
+
+    [Fact]
+    public void Preserves_math_span_class()
+    {
+        var html = "<p><span class=\"math\">x &lt; y</span></p>";
+        var outHtml = _sanitizer.Sanitize(html).ToLowerInvariant();
+        Assert.Contains("<span", outHtml);
+        Assert.Contains("class=\"math\"", outHtml);
+    }
 }

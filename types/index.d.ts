@@ -1,14 +1,25 @@
 // TypeScript declarations for EdNotes RichText Editor
 
 export interface EditorInstance {
-  originalTextarea: HTMLTextAreaElement;
-  editor: HTMLElement;
+  textarea: HTMLTextAreaElement;
+  root: HTMLElement;
+  content: HTMLElement;
+  originalTextarea?: HTMLTextAreaElement;
+  editor?: HTMLElement;
   getHTML(): string;
   setHTML(html: string): void;
   getPlain(): string;
   getMarkdown(): string;
+  exportPlainText(): string;
+  exportMarkdown(): string;
+  exportHTML(): string;
+  serialize(): string;
   focus(): void;
-  destroy?(): void;
+  undo(): void;
+  redo(): void;
+  triggerSave(): void;
+  dispose(): void;
+  destroy(): void;
 }
 
 export interface AutosaveConfig {
@@ -41,13 +52,18 @@ export interface InitConfig {
   onReady?: (editor: EditorInstance) => void;
   onDestroy?: (editor: EditorInstance) => void;
   promptLink?: () => string | null;
+  promptMath?: () => string | null;
 }
 
 export interface PluginButton {
   name: string;
-  icon: string;
-  label: string;
-  command: string;
+  icon?: string;
+  text?: string;
+  label?: string;
+  command?: string;
+  run?: (editor: EditorInstance) => void;
+  type?: 'button' | 'dropdown';
+  options?: Array<PluginButton>;
   shortcut?: string;
   dropdown?: boolean;
 }
@@ -59,6 +75,9 @@ export interface PluginDefinition {
   init?: (editor: EditorInstance) => void;
   dispose?: (editor: EditorInstance) => void;
 }
+
+export type ToolbarButtonGroup = PluginButton[];
+export type ToolbarLayout = ToolbarButtonGroup[];
 
 export interface EdNotesRichTextAPI {
   readonly version: string;
@@ -74,7 +93,7 @@ export interface EdNotesRichTextAPI {
   
   // Instance management
   get(selector: string | HTMLElement): EditorInstance | undefined;
-  destroy(selector: string | HTMLElement): void;
+  destroy(selector?: string | HTMLElement | NodeListOf<HTMLElement> | HTMLElement[]): void;
   
   // Global operations
   undo(): void;
@@ -99,11 +118,14 @@ export interface RichTextLegacyAPI {
     autosaveIntervalMs?: number;
     onAutosave?: (html: string) => void;
     promptLink?: () => string | null;
+    promptMath?: () => string | null;
+    toolbarLayout?: ToolbarLayout;
   }): EditorInstance[];
   
   undo(): void;
   redo(): void;
   triggerSave(): void;
+  destroy(selector?: string | HTMLElement | NodeListOf<HTMLElement> | HTMLElement[]): void;
   exportAllPlain(): string[];
   exportAllMarkdown(): string[];
   exportAllHTML(): string[];

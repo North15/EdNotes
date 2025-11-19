@@ -27,7 +27,7 @@ A rich text editor with security-first design, accessibility focus, and modern d
 EdNotesRichText.init({
   selector: '#content',
   plugins: 'core formatting blocks lists links tables tasks math',
-  toolbar: 'undo redo | blocks | bold italic underline | link | numlist bullist task | table math | removeformat'
+  toolbar: 'undo redo | blocks | bold italic underline | link unlink | numlist bullist task | table math | removeformat'
 });
 </script>
 ```

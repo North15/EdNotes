@@ -2,13 +2,13 @@
 // Provides industry-standard init() interface with plugin system
 
 import { RichText } from './ednotes.richtext.bundle.js';
-import { registerPlugin, parseToolbar, validatePlugins } from './plugins/index.js';
+import { registerPlugin, validatePlugins, buildToolbarLayout } from './plugins/index.js';
 
 // Default configuration
 const defaultConfig = {
     selector: 'textarea',
     plugins: 'core formatting blocks lists links tables tasks math',
-    toolbar: 'undo redo | blocks | bold italic underline | link | numlist bullist task | table math | removeformat',
+    toolbar: 'undo redo | blocks | bold italic underline | link unlink | numlist bullist task | table math | removeformat',
     autosave: null,
     history: { limit: 100 },
     paste: { clean: true },
@@ -32,8 +32,7 @@ const EdNotesRichText = {
             console.warn(`[EdNotes.RichText] Unknown plugins: ${invalidPlugins.join(', ')}`);
         }
         
-        // Parse toolbar (for future use with plugin system)
-        parseToolbar(finalConfig.toolbar);
+        const toolbarLayout = buildToolbarLayout(requestedPlugins, finalConfig.toolbar);
         
         // Convert to RichText.attach format
         const attachOptions = {
@@ -41,7 +40,9 @@ const EdNotesRichText = {
             onChange: finalConfig.onChange,
             autosaveIntervalMs: finalConfig.autosave?.interval,
             onAutosave: finalConfig.autosave?.handler,
-            promptLink: finalConfig.promptLink
+            promptLink: finalConfig.promptLink,
+            promptMath: finalConfig.promptMath,
+            toolbarLayout
         };
         
     // Initialize with backward compatibility (return value not needed; instances gathered below)
@@ -90,6 +91,10 @@ const EdNotesRichText = {
     
     destroy(selector) {
         const instance = this.get(selector);
+        if (typeof selector === 'string') {
+            RichText.destroy(selector);
+            return;
+        }
         if (instance && instance.destroy) {
             instance.destroy();
         }
