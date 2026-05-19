@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -13,13 +14,13 @@ public sealed class HtmlPolicySanitizer
 	private static readonly HashSet<string> AllowedTags = new(new[]
 	{
 		"p","h1","h2","h3","ul","ol","li","blockquote","pre","code","hr",
-		"table","thead","tbody","tr","th","td","strong","em","u","a"
+		"table","thead","tbody","tr","th","td","strong","em","u","a","span"
 	});
 
 	// Allowed attributes per element (global subset for simplicity)
 	private static readonly HashSet<string> AllowedAttributes = new(new[]
 	{
-		"href","target","rel","colspan","rowspan","data-list","data-checked"
+		"href","target","rel","colspan","rowspan","data-list","data-checked","class"
 	});
 
 	private static readonly Regex TagRegex = new("<(/?)([a-zA-Z0-9]+)([^>]*)>", RegexOptions.Compiled);
@@ -41,6 +42,7 @@ public sealed class HtmlPolicySanitizer
 
 		var sb = new StringBuilder();
 		int lastIndex = 0;
+		var spanAllowance = new Stack<bool>();
 		foreach (Match m in TagRegex.Matches(working))
 		{
 			// Append text between tags (escaped minimally: we trust original text except angle brackets already segmented)
@@ -53,7 +55,7 @@ public sealed class HtmlPolicySanitizer
 			var tagName = m.Groups[2].Value.ToLowerInvariant();
 			var attrPart = m.Groups[3].Value;
 
-			if (!AllowedTags.Contains(tagName))
+				if (!AllowedTags.Contains(tagName))
 			{
 				// Drop disallowed tag entirely (content preserved via text append logic for non-block removals handled above)
 				lastIndex = m.Index + m.Length;
@@ -62,12 +64,22 @@ public sealed class HtmlPolicySanitizer
 
 			if (closing)
 			{
+				if (tagName == "span")
+				{
+					var allowed = spanAllowance.Count > 0 && spanAllowance.Pop();
+					if (!allowed)
+					{
+						lastIndex = m.Index + m.Length;
+						continue;
+					}
+				}
 				sb.Append('<').Append('/').Append(tagName).Append('>');
 			}
 			else
 			{
-				// Build sanitized start tag
-				sb.Append('<').Append(tagName);
+				var tagBuilder = new StringBuilder();
+				tagBuilder.Append('<').Append(tagName);
+				var isMathSpan = false;
 				if (!string.IsNullOrEmpty(attrPart))
 				{
 					foreach (Match am in AttrRegex.Matches(attrPart))
@@ -106,23 +118,50 @@ public sealed class HtmlPolicySanitizer
 							continue;
 						}
 
-							if (value.Length == 0)
+						if (name == "class")
+						{
+							if (tagName == "span")
 							{
-								sb.Append(' ').Append(name);
+								var lowered = value.Trim().ToLowerInvariant();
+								if (lowered == "math")
+								{
+									tagBuilder.Append(' ').Append(name).Append("=\"math\"");
+									isMathSpan = true;
+								}
 							}
 							else
 							{
-								sb.Append(' ').Append(name).Append("=\"").Append(EscapeAttribute(value)).Append('"');
+								tagBuilder.Append(' ').Append(name).Append("=\"").Append(EscapeAttribute(value)).Append('"');
+							}
+							continue;
+						}
+
+							if (value.Length == 0)
+							{
+								tagBuilder.Append(' ').Append(name);
+							}
+							else
+							{
+								tagBuilder.Append(' ').Append(name).Append("=\"").Append(EscapeAttribute(value)).Append('"');
 							}
 					}
 				}
-
+				if (tagName == "span")
+				{
+					spanAllowance.Push(isMathSpan);
+					if (!isMathSpan)
+					{
+						lastIndex = m.Index + m.Length;
+						continue;
+					}
+				}
 				if (tagName == "a")
 				{
 					// Enforce target/rel on all links
-					sb.Append(" target=\"_blank\" rel=\"noopener noreferrer\"");
+					tagBuilder.Append(" target=\"_blank\" rel=\"noopener noreferrer\"");
 				}
-				sb.Append('>');
+				tagBuilder.Append('>');
+				sb.Append(tagBuilder);
 			}
 			lastIndex = m.Index + m.Length;
 		}

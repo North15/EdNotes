@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.5] - 2026-05-19
+
+### Changed (0.5.5)
+
+- Bumped the NPM package, NuGet package, runtime version exports, and public documentation references to 0.5.5.
+
+### Migration Notes (0.5.5)
+
+No API or behavioral changes. Consumers can upgrade without code changes.
+
 ## [0.5.3] - 2025-09-02
 
 ### Removed (0.5.3)

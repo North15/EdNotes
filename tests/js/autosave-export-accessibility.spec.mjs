@@ -26,6 +26,36 @@ test('autosave triggers after interval when content changes', ()=>{
   assert.equal(autosaves.length,2,'Second autosave after change');
 });
 
+test('autosave uses receiver-safe global timer wrappers', ()=>{
+  editor.destroy();
+
+  const realSetInterval = global.setInterval;
+  const realClearInterval = global.clearInterval;
+  const calls = [];
+
+  global.setInterval = function(fn, ms){
+    if (this !== global) throw new TypeError('Illegal invocation');
+    calls.push({ type:'set', fn, ms });
+    return 17;
+  };
+
+  global.clearInterval = function(id){
+    if (this !== global) throw new TypeError('Illegal invocation');
+    calls.push({ type:'clear', id });
+  };
+
+  try {
+    editor = createEditor({ html:'<p></p>', options:{ autosaveIntervalMs:2000, onAutosave:()=>{} } });
+    assert.equal(calls.length, 1, 'Autosave timer registered once');
+    assert.deepEqual(calls[0], { type:'set', fn:calls[0].fn, ms:2000 }, 'Timer registered with the expected interval');
+    editor.destroy();
+    assert.deepEqual(calls[1], { type:'clear', id:17 }, 'Timer cleared through the same receiver-safe wrapper');
+  } finally {
+    global.setInterval = realSetInterval;
+    global.clearInterval = realClearInterval;
+  }
+});
+
 test('export plain & markdown basic mapping', ()=>{
   editor.content.innerHTML='<h1>Title</h1><p>Para <strong>Bold</strong></p><ul><li>Item</li></ul>';
   const plain = editor.exportPlainText();
