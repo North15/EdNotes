@@ -23,7 +23,7 @@ const defaultConfig = {
 
 // Global namespace object
 const EdNotesRichText = {
-  version: "0.5.5",
+  version: "0.6.0",
 
   // Industry-standard initialization
   init(config = {}) {

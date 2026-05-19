@@ -19703,7 +19703,7 @@ const RichText = {
 
 // Version injected manually (consider automated replacement in future build step)
 // Bump version for release metadata alignment.
-RichText.version = "0.5.5";
+RichText.version = "0.6.0";
 
 function blockCommand(tag) {
   return (ed) => {

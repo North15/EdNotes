@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -89,19 +90,12 @@ jobs:
       - name: Publish (npm)
         if: success()
         env:
-          NODE_AUTH_TOKEN: ${{ secrets['NPM_TOKEN'] }}
           NPM_PACKAGE_NAME: ${{ steps.ver.outputs.npm_package_name }}
           PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
         run: |
           node - <<'EOF'
-          const token = process.env.NODE_AUTH_TOKEN;
           const packageName = process.env.NPM_PACKAGE_NAME;
           const version = process.env.PACKAGE_VERSION;
-
-          if (!token) {
-            console.log('NPM_TOKEN secret not set; skipping publish.');
-            process.exit(0);
-          }
 
           const { spawnSync } = require('child_process');
           const published = spawnSync('npm', ['view', `${packageName}@${version}`, 'version'], {
@@ -114,10 +108,14 @@ jobs:
             process.exit(0);
           }
 
-          const result = spawnSync('npm', ['publish', '--ignore-scripts'], {
+          const result = spawnSync('npm', ['publish', '--ignore-scripts', '--provenance'], {
             stdio: 'inherit',
             shell: true
           });
+
+          if (result.status !== 0) {
+            console.error('npm publish failed. Configure npm trusted publishing for this repository in the npm package settings.');
+          }
 
           process.exit(result.status ?? 1);
           EOF
