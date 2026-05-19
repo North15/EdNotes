@@ -1,7 +1,7 @@
 # EdNotes Rich Text Editor
 
 ![CI](https://github.com/North15/EdNotes/actions/workflows/ci.yml/badge.svg)
-![NPM Version](https://img.shields.io/npm/v/%40north15%2Fednotes-richtext.svg)
+![NPM Version](https://img.shields.io/npm/v/ednotes-richtext.svg)
 ![NuGet](https://img.shields.io/nuget/v/EdNotes.RichText.svg)
 ![Package Version](https://img.shields.io/badge/version-0.6.0-informational.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -16,9 +16,9 @@ A rich text editor with security-first design, accessibility focus, and modern d
 <!-- Include CSS and JS -->
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@north15/ednotes-richtext@0.6.0/dist/ednotes.richtext.css"
+  href="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.6.0/dist/ednotes.richtext.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/@north15/ednotes-richtext@0.6.0/dist/ednotes.richtext.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.6.0/dist/ednotes.richtext.umd.min.js"></script>
 
 <!-- Your textarea -->
 <textarea id="content">Start typing...</textarea>
@@ -37,11 +37,11 @@ A rich text editor with security-first design, accessibility focus, and modern d
 ### NPM
 
 ```bash
-npm install @north15/ednotes-richtext
+npm install ednotes-richtext
 ```
 
 ```javascript
-import EdNotesRichText from "@north15/ednotes-richtext";
+import EdNotesRichText from "ednotes-richtext";
 
 EdNotesRichText.init({
   selector: "textarea",
