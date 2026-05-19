@@ -98,9 +98,6 @@ jobs:
 
           const packageName = process.env.NPM_PACKAGE_NAME;
           const version = process.env.PACKAGE_VERSION;
-          const publishEnv = { ...process.env };
-          delete publishEnv.NODE_AUTH_TOKEN;
-          delete publishEnv.NPM_CONFIG_USERCONFIG;
 
           const published = spawnSync('npm', ['view', `${packageName}@${version}`, 'version'], {
             encoding: 'utf8',
@@ -120,7 +117,6 @@ jobs:
 
           const result = spawnSync('npm', publishArgs, {
             encoding: 'utf8',
-            env: publishEnv,
             shell: true
           });
 
@@ -132,6 +128,10 @@ jobs:
             if (output.includes('E404') || output.includes('Not Found - PUT')) {
               console.error(
                 `npm publish failed because package '${packageName}' is not available to this publisher or scope. Verify the npm package name, ensure the scope is owned by the target npm account, and grant this GitHub repository trusted publishing access.`
+              );
+            } else if (output.includes('ENEEDAUTH') || output.includes('need auth')) {
+              console.error(
+                'npm publish failed because the npm authentication context was unavailable during the workflow run. Keep the actions/setup-node npm configuration intact so trusted publishing can authenticate.'
               );
             } else if (output.includes('trusted publishing') || output.includes('OIDC')) {
               console.error(
