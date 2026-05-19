@@ -73,13 +73,14 @@ jobs:
 
       - name: Extract .NET Coverage
         if: always()
+        shell: bash
         run: |
           echo "Scanning for .cobertura.xml files..."
           node -e "const fs=require('fs'),path=require('path');function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{const p=path.join(d,e.name);return e.isDirectory()?walk(p):(p.endsWith('.cobertura.xml')?[p]:[]);});}if(!fs.existsSync('artifacts/test-results/dotnet')){console.log('No dotnet test results dir');process.exit(0);}const files=walk('artifacts/test-results/dotnet');if(files.length){fs.mkdirSync('artifacts/coverage',{recursive:true});fs.copyFileSync(files[0],'artifacts/coverage/dotnet.cobertura.xml');console.log('Copied coverage from',files[0]);}else{console.log('No cobertura file found (will attempt reportgenerator if installed)');process.exit(0);}"
           # Optionally generate a normalized Cobertura report & HTML summary if reportgenerator is available
           echo "Attempting to install reportgenerator (optional)..."
           dotnet tool install --global dotnet-reportgenerator-globaltool || echo "reportgenerator install skipped"
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
           if command -v reportgenerator >/dev/null 2>&1; then
             mkdir -p artifacts/coverage/dotnet
             reportgenerator -reports:"artifacts/test-results/dotnet/**/coverage.cobertura.xml" -targetdir:"artifacts/coverage/dotnet" -reporttypes:"Cobertura;HtmlSummary" || echo "reportgenerator execution failed (non-fatal)"
