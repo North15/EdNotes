@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EdNotes RichText Product Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="../src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.css"
+    />
+    <link rel="stylesheet" href="./test-page.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+      crossorigin="anonymous"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.mjs"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main class="demo-shell">
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">EdNotes RichText</p>
+          <h1>Security-first editing with product-ready polish.</h1>
+          <p class="hero-summary">
+            Explore the real source modules, not a throwaway mock. This page is
+            designed to show what EdNotes feels like as a serious editor:
+            accessible, themeable, safe by default, and ready to sit inside a
+            modern content workflow.
+          </p>
+          <div class="hero-badges">
+            <span class="badge">Strict allowlist schema</span>
+            <span class="badge">Accessible toolbar + shortcuts</span>
+            <span class="badge">Client + server sanitization</span>
+            <span class="badge">JS package + .NET package</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="showcase">
+        <section class="editor-stage panel" id="editor-surface" data-state="booting">
+          <div class="section-heading">
+            <div>
+              <p class="kicker">Live playground</p>
+              <h2>Put the product front and center</h2>
+            </div>
+            <div class="metric-stack">
+              <div class="metric-chip">
+                <span>Words</span>
+                <strong id="word-count">0</strong>
+              </div>
+              <div class="metric-chip">
+                <span>HTML bytes</span>
+                <strong id="html-bytes">0</strong>
+              </div>
+            </div>
+          </div>
+          <p class="section-copy">
+            The toolbar, keyboard shortcuts, task lists, tables, links, math,
+            slash commands, and export flows all run here against the same modules
+            you would ship.
+          </p>
+          <div class="editor-host" id="editor-host">
+            <textarea id="playground"><h2>Ship safer notes faster</h2>
+<p>EdNotes gives teams a focused editor surface with a strict schema, strong defaults, and a .NET sanitization boundary that stays aligned with the browser experience.</p>
+<ul data-list="task">
+  <li data-checked="true">Toolbar and keyboard flows are ready to demo</li>
+  <li data-checked="false">Task lists keep explicit checked state in HTML</li>
+  <li data-checked="false">Destroy and reset should reattach cleanly</li>
+</ul>
+<blockquote>Accessible controls, predictable output, and security-first markup are part of the product surface, not bolt-ons.</blockquote>
+<table>
+  <tbody>
+    <tr><th>Layer</th><th>Value</th></tr>
+    <tr><td>Browser editor</td><td>Fast authoring with export helpers</td></tr>
+    <tr><td>.NET package</td><td>Authoritative HTML sanitization</td></tr>
+  </tbody>
+</table>
+<p>Try heading changes, insert a link, toggle a task item, or dump the current HTML, plain text, and markdown snapshots.</p></textarea>
+          </div>
+        </section>
+
+        <aside class="control-deck panel">
+          <p class="kicker">Control deck</p>
+          <h2>Inspect or reset the live demo</h2>
+          <p class="control-copy">
+            Export the current document, confirm slash and prompt-backed commands,
+            or reset the seeded content.
+          </p>
+          <div class="action-grid">
+            <button id="btn-html" class="primary" type="button" title="Show the editor's current HTML output">Inspect HTML</button>
+            <button id="btn-plain" type="button" title="Show the editor's plain text export">Inspect Plain Text</button>
+            <button id="btn-markdown" type="button" title="Show the editor's Markdown export">Inspect Markdown</button>
+            <button id="btn-reset" class="warm" type="button" title="Restore the original demo content">Reset Demo</button>
+            <button id="btn-destroy" class="danger" type="button" title="Destroy the current editor instance without leaving the page">Destroy Editor</button>
+          </div>
+          <pre id="output" class="code-surface compact-code-surface">Click an action to inspect editor state.</pre>
+        </aside>
+      </section>
+
+      <section class="setup-panel panel">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">Project setup</p>
+            <h2>How this drops into a real app</h2>
+          </div>
+          <div class="mini-status">
+            <span>Package</span>
+            <strong>ednotes-richtext</strong>
+          </div>
+        </div>
+        <p class="section-copy">
+          The live demo above imports source files directly so this page can run
+          with zero build steps. In a real product, use the published npm package
+          or the .NET package assets shown below.
+        </p>
+        <div class="setup-grid">
+          <article class="setup-step">
+            <h3>Browser app with npm</h3>
+            <p>
+              Install the package, import the public API, and initialize the editor
+              against the textarea your app already owns.
+            </p>
+            <pre id="setup-npm-snippet" class="code-surface">npm install ednotes-richtext
+
+import EdNotesRichText from "ednotes-richtext";
+
+EdNotesRichText.init({
+  selector: "#notes",
+  plugins: "core formatting blocks lists links tables tasks math",
+  toolbar:
+    "undo redo | blocks | bold italic underline | link unlink | numlist bullist task | table math | removeformat",
+  theme: "professional",
+  promptLink: () =&gt; window.prompt("Enter URL", "https://"),
+  promptMath: () =&gt; window.prompt("Enter LaTeX", "x^2"),
+});</pre>
+          </article>
+
+          <article class="setup-step">
+            <h3>ASP.NET with the NuGet package</h3>
+            <p>
+              Serve the packaged assets from <strong>_content</strong>, then let the
+              browser editor and server sanitization stay in the same stack.
+            </p>
+            <pre id="setup-dotnet-snippet" class="code-surface">&lt;link
+  rel="stylesheet"
+  href="~/_content/EdNotes.RichText/editor/ednotes.richtext.css"
+/&gt;
+&lt;script src="~/_content/EdNotes.RichText/editor/ednotes.richtext.loader.js"&gt;&lt;/script&gt;
+
+&lt;textarea id="notes"&gt;&lt;/textarea&gt;
+&lt;script&gt;
+  EdNotesRichText.init({ selector: "#notes", theme: "professional" });
+&lt;/script&gt;</pre>
+          </article>
+        </div>
+      </section>
+
+    </main>
+
+    <script type="module">
+      import EdNotesRichText from "../src/EdNotes.RichText/wwwroot/editor/ednotes.richtext.api.js";
+      import initTestPage from "./test-page.app.js";
+
+      initTestPage({ EdNotesRichText, document, window });
+    </script>
+  </body>
+</html>

@@ -1,36 +1,77 @@
-name: release-nuget
+name: release-packages
 on:
   push:
     tags:
       - 'v*'
-  release:
-    types: [published]
 
 jobs:
   build-test-pack-publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      # Allows overriding; defaults derived from tag (strip leading v)
-      PACKAGE_ID: EdNotes.RichText
     steps:
       - uses: actions/checkout@v4
-      - name: Derive Version
-        id: ver
-        run: |
-          ref="${GITHUB_REF_NAME}" # e.g. v0.2.0
-          ver="${ref#v}"
-          echo "version=$ver" >> $GITHUB_OUTPUT
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          ref: ${{ github.ref_name }}
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Validate release version
+        id: ver
+        env:
+          RELEASE_REF: ${{ github.ref_name }}
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+
+          const releaseRef = process.env.RELEASE_REF;
+          if (!releaseRef || !releaseRef.startsWith('v')) {
+            console.error(`Release ref must start with v. Got: ${releaseRef || '<empty>'}`);
+            process.exit(1);
+          }
+
+          const version = releaseRef.slice(1);
+          const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const csproj = fs.readFileSync('src/EdNotes.RichText/EdNotes.RichText.csproj', 'utf8');
+          const packageIdMatch = csproj.match(/<PackageId>([^<]+)<\/PackageId>/);
+          const versionMatch = csproj.match(/<Version>([^<]+)<\/Version>/);
+
+          if (!packageIdMatch || !versionMatch) {
+            console.error('Could not find <PackageId> and <Version> in src/EdNotes.RichText/EdNotes.RichText.csproj');
+            process.exit(1);
+          }
+
+          const packageVersion = String(packageJson.version || '').trim();
+          const packageName = String(packageJson.name || '').trim();
+          const csprojVersion = versionMatch[1].trim();
+          const packageId = packageIdMatch[1].trim();
+
+          if (packageVersion !== version) {
+            console.error(`Tag version ${version} does not match package.json version ${packageVersion}`);
+            process.exit(1);
+          }
+
+          if (csprojVersion !== version) {
+            console.error(`Tag version ${version} does not match csproj version ${csprojVersion}`);
+            process.exit(1);
+          }
+
+          fs.appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            [
+              `version=${version}`,
+              `npm_package_name=${packageName}`,
+              `nuget_package_id=${packageId}`
+            ].join('\n') + '\n'
+          );
+          EOF
       - name: Restore
         run: dotnet restore EdNotes.sln
       - name: Install JS deps
@@ -45,6 +86,41 @@ jobs:
         run: dotnet test tests/unit/EdNotes.RichText.Tests.csproj -c Release --no-build
       - name: Pack
         run: dotnet pack src/EdNotes.RichText/EdNotes.RichText.csproj -c Release -p:PackageVersion=${{ steps.ver.outputs.version }} -o ./artifacts
+      - name: Publish (npm)
+        if: success()
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets['NPM_TOKEN'] }}
+          NPM_PACKAGE_NAME: ${{ steps.ver.outputs.npm_package_name }}
+          PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          node - <<'EOF'
+          const token = process.env.NODE_AUTH_TOKEN;
+          const packageName = process.env.NPM_PACKAGE_NAME;
+          const version = process.env.PACKAGE_VERSION;
+
+          if (!token) {
+            console.log('NPM_TOKEN secret not set; skipping publish.');
+            process.exit(0);
+          }
+
+          const { spawnSync } = require('child_process');
+          const published = spawnSync('npm', ['view', `${packageName}@${version}`, 'version'], {
+            encoding: 'utf8',
+            shell: true
+          });
+
+          if (published.status === 0 && published.stdout.trim() === version) {
+            console.log(`npm package ${packageName}@${version} already published; skipping.`);
+            process.exit(0);
+          }
+
+          const result = spawnSync('npm', ['publish', '--ignore-scripts'], {
+            stdio: 'inherit',
+            shell: true
+          });
+
+          process.exit(result.status ?? 1);
+          EOF
       - name: Publish (NuGet)
         if: success()
         env:
