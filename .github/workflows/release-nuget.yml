@@ -98,6 +98,10 @@ jobs:
 
           const packageName = process.env.NPM_PACKAGE_NAME;
           const version = process.env.PACKAGE_VERSION;
+          const publishEnv = { ...process.env };
+          delete publishEnv.NODE_AUTH_TOKEN;
+          delete publishEnv.NPM_CONFIG_USERCONFIG;
+
           const published = spawnSync('npm', ['view', `${packageName}@${version}`, 'version'], {
             encoding: 'utf8',
             shell: true
@@ -110,6 +114,7 @@ jobs:
 
           const result = spawnSync('npm', ['publish', '--ignore-scripts', '--provenance'], {
             encoding: 'utf8',
+            env: publishEnv,
             shell: true
           });
 
