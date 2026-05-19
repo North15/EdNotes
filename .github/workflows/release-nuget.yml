@@ -94,10 +94,10 @@ jobs:
           PACKAGE_VERSION: ${{ steps.ver.outputs.version }}
         run: |
           node - <<'EOF'
+          const { spawnSync } = require('child_process');
+
           const packageName = process.env.NPM_PACKAGE_NAME;
           const version = process.env.PACKAGE_VERSION;
-
-          const { spawnSync } = require('child_process');
           const published = spawnSync('npm', ['view', `${packageName}@${version}`, 'version'], {
             encoding: 'utf8',
             shell: true
@@ -109,12 +109,26 @@ jobs:
           }
 
           const result = spawnSync('npm', ['publish', '--ignore-scripts', '--provenance'], {
-            stdio: 'inherit',
+            encoding: 'utf8',
             shell: true
           });
 
+          const output = `${result.stdout || ''}\n${result.stderr || ''}`;
+          process.stdout.write(result.stdout || '');
+          process.stderr.write(result.stderr || '');
+
           if (result.status !== 0) {
-            console.error('npm publish failed. Configure npm trusted publishing for this repository in the npm package settings.');
+            if (output.includes('E404') || output.includes('Not Found - PUT')) {
+              console.error(
+                `npm publish failed because package '${packageName}' is not available to this publisher or does not exist under the configured npm account. Create or claim the package in npm and grant this GitHub repository trusted publishing access.`
+              );
+            } else if (output.includes('trusted publishing') || output.includes('OIDC')) {
+              console.error(
+                'npm publish failed because trusted publishing is not configured for this repository or package in npm.'
+              );
+            } else {
+              console.error('npm publish failed. Check the npm publish logs above for the exact registry response.');
+            }
           }
 
           process.exit(result.status ?? 1);
