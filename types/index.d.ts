@@ -1,14 +1,25 @@
 // TypeScript declarations for EdNotes RichText Editor
 
 export interface EditorInstance {
-  originalTextarea: HTMLTextAreaElement;
-  editor: HTMLElement;
+  textarea: HTMLTextAreaElement;
+  root: HTMLElement;
+  content: HTMLElement;
+  originalTextarea?: HTMLTextAreaElement;
+  editor?: HTMLElement;
   getHTML(): string;
   setHTML(html: string): void;
   getPlain(): string;
   getMarkdown(): string;
+  exportPlainText(): string;
+  exportMarkdown(): string;
+  exportHTML(): string;
+  serialize(): string;
   focus(): void;
-  destroy?(): void;
+  undo(): void;
+  redo(): void;
+  triggerSave(): void;
+  dispose(): void;
+  destroy(): void;
 }
 
 export interface AutosaveConfig {
@@ -36,18 +47,23 @@ export interface InitConfig {
   history?: HistoryConfig;
   paste?: PasteConfig;
   a11y?: A11yConfig;
-  theme?: 'default' | 'high-contrast' | 'professional' | 'dyslexia' | string;
+  theme?: "default" | "high-contrast" | "professional" | "dyslexia" | string;
   onChange?: (html: string) => void;
   onReady?: (editor: EditorInstance) => void;
   onDestroy?: (editor: EditorInstance) => void;
   promptLink?: () => string | null;
+  promptMath?: () => string | null;
 }
 
 export interface PluginButton {
   name: string;
-  icon: string;
-  label: string;
-  command: string;
+  icon?: string;
+  text?: string;
+  label?: string;
+  command?: string;
+  run?: (editor: EditorInstance) => void;
+  type?: "button" | "dropdown";
+  options?: Array<PluginButton>;
   shortcut?: string;
   dropdown?: boolean;
 }
@@ -60,32 +76,37 @@ export interface PluginDefinition {
   dispose?: (editor: EditorInstance) => void;
 }
 
+export type ToolbarButtonGroup = PluginButton[];
+export type ToolbarLayout = ToolbarButtonGroup[];
+
 export interface EdNotesRichTextAPI {
   readonly version: string;
-  
+
   // Primary API
   init(config?: InitConfig): EditorInstance[];
-  
+
   // Plugin management
   registerPlugin(name: string, definition: PluginDefinition): void;
-  
-  // Theme management  
+
+  // Theme management
   applyTheme(themeName: string): void;
-  
+
   // Instance management
   get(selector: string | HTMLElement): EditorInstance | undefined;
-  destroy(selector: string | HTMLElement): void;
-  
+  destroy(
+    selector?: string | HTMLElement | NodeListOf<HTMLElement> | HTMLElement[]
+  ): void;
+
   // Global operations
   undo(): void;
   redo(): void;
   triggerSave(): void;
-  
+
   // Export helpers
   exportAllPlain(): string[];
   exportAllMarkdown(): string[];
   exportAllHTML(): string[];
-  
+
   // Internal (testing)
   _plugins(): any;
   _instances(): EditorInstance[];
@@ -93,17 +114,25 @@ export interface EdNotesRichTextAPI {
 
 // Legacy API (backward compatibility)
 export interface RichTextLegacyAPI {
-  attach(selector: string, options?: {
-    historyLimit?: number;
-    onChange?: (html: string) => void;
-    autosaveIntervalMs?: number;
-    onAutosave?: (html: string) => void;
-    promptLink?: () => string | null;
-  }): EditorInstance[];
-  
+  attach(
+    selector: string,
+    options?: {
+      historyLimit?: number;
+      onChange?: (html: string) => void;
+      autosaveIntervalMs?: number;
+      onAutosave?: (html: string) => void;
+      promptLink?: () => string | null;
+      promptMath?: () => string | null;
+      toolbarLayout?: ToolbarLayout;
+    }
+  ): EditorInstance[];
+
   undo(): void;
   redo(): void;
   triggerSave(): void;
+  destroy(
+    selector?: string | HTMLElement | NodeListOf<HTMLElement> | HTMLElement[]
+  ): void;
   exportAllPlain(): string[];
   exportAllMarkdown(): string[];
   exportAllHTML(): string[];
