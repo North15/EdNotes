@@ -5,11 +5,12 @@
 ### Changed (0.6.0)
 
 - Switched the GitHub npm release workflow to trusted publishing so package releases no longer depend on an NPM token secret.
+- Renamed the npm package to `@north15/ednotes-richtext` so releases publish from a controlled public scope instead of the unavailable unscoped package name.
 - Bumped the NPM package, NuGet package, runtime version exports, tests, and public documentation references to 0.6.0.
 
 ### Migration Notes (0.6.0)
 
-No API or behavioral changes. Consumers can upgrade without code changes.
+No editor API or behavioral changes. npm consumers must update install and import paths to `@north15/ednotes-richtext`.
 
 ## [0.5.5] - 2026-05-19
 

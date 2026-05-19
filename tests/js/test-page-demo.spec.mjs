@@ -71,9 +71,11 @@ describe("Docs test page lifecycle", () => {
     expect(testPageDocument.body.textContent).not.toContain("Trusted seed");
     expect(pageText).not.toContain("autosave");
     expect(npmSnippet).toBeTruthy();
-    expect(npmSnippet.textContent).toContain("npm install ednotes-richtext");
     expect(npmSnippet.textContent).toContain(
-      'import EdNotesRichText from "ednotes-richtext";'
+      "npm install @north15/ednotes-richtext"
+    );
+    expect(npmSnippet.textContent).toContain(
+      'import EdNotesRichText from "@north15/ednotes-richtext";'
     );
     expect(npmSnippet.textContent).toContain("EdNotesRichText.init({");
     expect(dotnetSnippet).toBeTruthy();

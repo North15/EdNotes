@@ -112,7 +112,13 @@ jobs:
             process.exit(0);
           }
 
-          const result = spawnSync('npm', ['publish', '--ignore-scripts', '--provenance'], {
+          const publishArgs = ['publish', '.', '--ignore-scripts', '--provenance'];
+
+          if (packageName.startsWith('@')) {
+            publishArgs.splice(2, 0, '--access', 'public');
+          }
+
+          const result = spawnSync('npm', publishArgs, {
             encoding: 'utf8',
             env: publishEnv,
             shell: true
@@ -125,7 +131,7 @@ jobs:
           if (result.status !== 0) {
             if (output.includes('E404') || output.includes('Not Found - PUT')) {
               console.error(
-                `npm publish failed because package '${packageName}' is not available to this publisher or does not exist under the configured npm account. Create or claim the package in npm and grant this GitHub repository trusted publishing access.`
+                `npm publish failed because package '${packageName}' is not available to this publisher or scope. Verify the npm package name, ensure the scope is owned by the target npm account, and grant this GitHub repository trusted publishing access.`
               );
             } else if (output.includes('trusted publishing') || output.includes('OIDC')) {
               console.error(

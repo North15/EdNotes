@@ -156,7 +156,10 @@ try {
             )
         }
 
-        $npmPublishArgs = @("publish", "--ignore-scripts")
+        $npmPublishArgs = @("publish", ".", "--ignore-scripts")
+        if ($npmPackageName.StartsWith("@")) {
+            $npmPublishArgs += @("--access", "public")
+        }
         if (-not [string]::IsNullOrWhiteSpace($NpmTag)) {
             $npmPublishArgs += @("--tag", $NpmTag)
         }
