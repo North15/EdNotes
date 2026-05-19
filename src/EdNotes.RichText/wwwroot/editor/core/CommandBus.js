@@ -1,6 +1,18 @@
 import { normalize } from "./Normalizer.js";
 import { captureBookmark, restoreBookmark } from "./Selection.js";
 
+const defaultSetInterval = (...args) => globalThis.setInterval(...args);
+const defaultClearInterval = (...args) => globalThis.clearInterval(...args);
+
+function selectionBelongsTo(root, selection = document.getSelection()) {
+  return !!(
+    selection &&
+    selection.rangeCount > 0 &&
+    root.contains(selection.anchorNode) &&
+    root.contains(selection.focusNode)
+  );
+}
+
 export class CommandBus {
   constructor(editor) {
     this.editor = editor;
@@ -107,8 +119,19 @@ export class EditorCore {
       lastTypeTs: 0,
       limit: this.options.historyLimit || 100,
     };
+    this._selectionBookmark = null;
+    this._slashCommands = Array.isArray(this.options.slashCommands)
+      ? this.options.slashCommands
+      : [];
+    this._slashState = {
+      open: false,
+      query: "",
+      items: [],
+      selectedIndex: 0,
+    };
     this._handlers = {};
-    this._setInterval = this.options._setInterval || setInterval;
+    this._setInterval = this.options._setInterval || defaultSetInterval;
+    this._clearInterval = this.options._clearInterval || defaultClearInterval;
     if (this.options.autosaveIntervalMs) {
       this._autosaveTimer = this._setInterval(() => {
         const val = this.serialize();
@@ -133,6 +156,11 @@ export class EditorCore {
     c.contentEditable = "true";
     c.setAttribute("role", "textbox");
     c.setAttribute("aria-multiline", "true");
+    const slashMenu = document.createElement("div");
+    slashMenu.className = "rtx-slash-menu";
+    slashMenu.hidden = true;
+    slashMenu.setAttribute("role", "listbox");
+    slashMenu.setAttribute("aria-label", "Slash commands");
     const live = document.createElement("div");
     live.className = "rtx-live";
     live.setAttribute("aria-live", "polite");
@@ -142,7 +170,9 @@ export class EditorCore {
     live.style.overflow = "hidden";
     w.appendChild(tb);
     w.appendChild(c);
+    w.appendChild(slashMenu);
     w.appendChild(live);
+    this._slashMenu = slashMenu;
     this._live = live;
     this.textarea.style.display = "none";
     this.textarea.parentNode.insertBefore(w, this.textarea.nextSibling);
@@ -156,6 +186,8 @@ export class EditorCore {
       const shouldNewEntry = gap > 600; // simple idle threshold
       this._transaction(() => {}, { pushHistory: shouldNewEntry });
       this.history.lastTypeTs = now;
+      this._rememberSelection();
+      this._updateSlashMenu();
     };
     this.content.addEventListener("input", this._handlers.input);
     // Paste pipeline
@@ -176,10 +208,25 @@ export class EditorCore {
         },
         { pushHistory: true }
       );
+      this._closeSlashMenu();
     };
     this.content.addEventListener("paste", this._handlers.paste);
+    this._handlers.focus = () => {
+      this._rememberSelection();
+      this._updateSlashMenu();
+    };
+    this.content.addEventListener("focus", this._handlers.focus);
+    this._handlers.selectionchange = () => {
+      this._rememberSelection();
+      this._updateSlashMenu();
+    };
+    document.addEventListener("selectionchange", this._handlers.selectionchange);
     // Keyboard shortcuts
     this._handlers.keydown = (e) => {
+      if (this._handleSlashMenuKeydown(e)) {
+        return;
+      }
+
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
 
@@ -240,7 +287,242 @@ export class EditorCore {
     this.content.innerHTML = this.textarea.value || "<p></p>";
     normalize(this.content);
     this.textarea.value = this.serialize();
+    this._rememberSelection();
     this._pushHistory();
+  }
+  _rememberSelection() {
+    if (!selectionBelongsTo(this.content)) return;
+    const bookmark = captureBookmark(this.content);
+    if (bookmark) {
+      this._selectionBookmark = bookmark;
+    }
+  }
+  _restoreSavedSelection() {
+    if (!this._selectionBookmark) return false;
+    restoreBookmark(this.content, this._selectionBookmark);
+    return true;
+  }
+  _getSlashQueryContext() {
+    if (!this._slashCommands.length) return null;
+    const selection = document.getSelection();
+    if (!selectionBelongsTo(this.content, selection) || !selection.isCollapsed) {
+      return null;
+    }
+
+    const range = selection.getRangeAt(0);
+    let node = range.startContainer;
+    let offset = range.startOffset;
+
+    if (node.nodeType !== 3) {
+      if (offset === 0) return null;
+      const previousNode = node.childNodes[offset - 1];
+      if (!previousNode || previousNode.nodeType !== 3) return null;
+      node = previousNode;
+      offset = previousNode.textContent.length;
+    }
+
+    const textBefore = node.textContent.slice(0, offset);
+    const slashIndex = textBefore.lastIndexOf("/");
+    if (slashIndex < 0) return null;
+
+    const beforeSlash = textBefore[slashIndex - 1];
+    if (beforeSlash && !/\s/.test(beforeSlash)) return null;
+
+    const query = textBefore.slice(slashIndex + 1);
+    if (/\s/.test(query)) return null;
+
+    const triggerRange = document.createRange();
+    triggerRange.setStart(node, slashIndex);
+    triggerRange.setEnd(node, offset);
+
+    return {
+      query: query.toLowerCase(),
+      range: triggerRange,
+    };
+  }
+  _getMatchingSlashCommands(query) {
+    if (!query) return this._slashCommands.slice(0, 8);
+
+    return this._slashCommands
+      .filter((item) => {
+        const haystack = [item.label, item.name]
+          .concat(item.keywords || [])
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(query);
+      })
+      .slice(0, 8);
+  }
+  _updateSlashMenu() {
+    if (!this._slashCommands.length || !this._slashMenu) return;
+
+    const context = this._getSlashQueryContext();
+    if (!context) {
+      this._closeSlashMenu();
+      return;
+    }
+
+    const items = this._getMatchingSlashCommands(context.query);
+    if (!items.length) {
+      this._closeSlashMenu();
+      return;
+    }
+
+    const queryChanged = this._slashState.query !== context.query;
+    this._slashState.open = true;
+    this._slashState.query = context.query;
+    this._slashState.items = items;
+    if (queryChanged) {
+      this._slashState.selectedIndex = 0;
+    } else {
+      this._slashState.selectedIndex = Math.min(
+        this._slashState.selectedIndex,
+        items.length - 1
+      );
+    }
+
+    this._renderSlashMenu(context.range);
+  }
+  _renderSlashMenu(range) {
+    this._slashMenu.innerHTML = "";
+    this._slashState.items.forEach((item, index) => {
+      const button = document.createElement("button");
+      const icon = document.createElement("span");
+      const label = document.createElement("span");
+      button.type = "button";
+      button.className = "rtx-slash-item";
+      button.setAttribute("role", "option");
+      button.setAttribute(
+        "aria-selected",
+        index === this._slashState.selectedIndex ? "true" : "false"
+      );
+      if (index === this._slashState.selectedIndex) {
+        button.classList.add("is-selected");
+      }
+      icon.className = "rtx-slash-item-icon";
+      icon.textContent = item.text || "/";
+      label.className = "rtx-slash-item-label";
+      label.textContent = item.label;
+      button.appendChild(icon);
+      button.appendChild(label);
+      button.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      button.addEventListener("click", () => {
+        this._executeSlashCommand(item);
+      });
+      this._slashMenu.appendChild(button);
+    });
+
+    const rootRect = this.root.getBoundingClientRect();
+    const rangeRect =
+      typeof range.getBoundingClientRect === "function"
+        ? range.getBoundingClientRect()
+        : {
+            left: rootRect.left + 12,
+            bottom: rootRect.top + this.content.offsetTop + 12,
+          };
+    const fallbackTop = this.content.offsetTop + 16;
+    const left = Math.max(
+      12,
+      Math.round((rangeRect.left || rootRect.left) - rootRect.left)
+    );
+    const top = Math.max(
+      fallbackTop,
+      Math.round((rangeRect.bottom || rootRect.top) - rootRect.top + 12)
+    );
+
+    this._slashMenu.style.left = `${left}px`;
+    this._slashMenu.style.top = `${top}px`;
+    this._slashMenu.hidden = false;
+  }
+  _closeSlashMenu() {
+    if (!this._slashMenu) return;
+    this._slashState.open = false;
+    this._slashState.query = "";
+    this._slashState.items = [];
+    this._slashState.selectedIndex = 0;
+    this._slashMenu.hidden = true;
+    this._slashMenu.innerHTML = "";
+  }
+  _moveSlashSelection(step) {
+    if (!this._slashState.items.length) return;
+    const lastIndex = this._slashState.items.length - 1;
+    const nextIndex =
+      this._slashState.selectedIndex + step > lastIndex
+        ? 0
+        : this._slashState.selectedIndex + step < 0
+        ? lastIndex
+        : this._slashState.selectedIndex + step;
+    this._slashState.selectedIndex = nextIndex;
+    const context = this._getSlashQueryContext();
+    if (context) {
+      this._renderSlashMenu(context.range);
+    }
+  }
+  _executeSlashCommand(item) {
+    if (!item) return;
+    this._restoreSavedSelection();
+    const context = this._getSlashQueryContext();
+    if (!context) {
+      this._closeSlashMenu();
+      return;
+    }
+
+    context.range.deleteContents();
+    const selection = document.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(context.range);
+    this._rememberSelection();
+    this._closeSlashMenu();
+
+    if (item.command) {
+      this.bus.exec(item.command);
+      return;
+    }
+    if (item.action === "undo") {
+      this.undo();
+      return;
+    }
+    if (item.action === "redo") {
+      this.redo();
+      return;
+    }
+    if (typeof item.run === "function") {
+      item.run(this);
+    }
+  }
+  _handleSlashMenuKeydown(e) {
+    if (!this._slashState.open) return false;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      this._moveSlashSelection(1);
+      return true;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      this._moveSlashSelection(-1);
+      return true;
+    }
+
+    if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      this._executeSlashCommand(
+        this._slashState.items[this._slashState.selectedIndex]
+      );
+      return true;
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      this._closeSlashMenu();
+      return true;
+    }
+
+    return false;
   }
   _transaction(worker, opts = {}) {
     const bm = captureBookmark(this.content);
@@ -363,6 +645,8 @@ export class EditorCore {
     this.content.innerHTML = html || "<p></p>";
     normalize(this.content);
     this.textarea.value = this.serialize();
+    this._closeSlashMenu();
+    this._rememberSelection();
     this._pushHistory();
   }
   triggerSave() {
@@ -412,18 +696,26 @@ export class EditorCore {
     this.content.focus();
   }
   dispose() {
-    if (this._autosaveTimer) clearInterval(this._autosaveTimer);
+    if (this._autosaveTimer) this._clearInterval(this._autosaveTimer);
   }
   destroy() {
     this.dispose();
     if (this._handlers) {
       if (this._handlers.input)
         this.content.removeEventListener("input", this._handlers.input);
+      if (this._handlers.focus)
+        this.content.removeEventListener("focus", this._handlers.focus);
       if (this._handlers.paste)
         this.content.removeEventListener("paste", this._handlers.paste);
       if (this._handlers.keydown)
         this.content.removeEventListener("keydown", this._handlers.keydown);
+      if (this._handlers.selectionchange)
+        document.removeEventListener(
+          "selectionchange",
+          this._handlers.selectionchange
+        );
     }
+    this._closeSlashMenu();
     this.triggerSave();
     if (this.root && this.root.parentNode) {
       this.root.parentNode.removeChild(this.root);

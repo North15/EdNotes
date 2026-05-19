@@ -23,9 +23,14 @@ Use conventional style (feat:, fix:, chore:, docs:, test:, perf:, refactor:). Ex
 ## Release Process
 
 1. Update `CHANGELOG.md`.
-2. Bump `<Version>` in `EdNotes.RichText.csproj`.
-3. Tag: `git tag vX.Y.Z`.
-4. Push tag; GitHub Actions will build & publish NuGet package.
+2. Bump `package.json` and `src/EdNotes.RichText/EdNotes.RichText.csproj` to the same version.
+3. Ensure you are signed in to npm and set `NUGET_API_KEY` in your shell.
+4. Preview the release with `npm run publish:all -- -WhatIf`.
+5. Publish with `npm run publish:all`.
+6. Tag: `git tag vX.Y.Z`.
+7. Push tag; GitHub Actions will build the tagged release, and NuGet publish remains safe because the workflow uses `--skip-duplicate`.
+
+The `scripts/publish-packages.ps1` flow validates version parity, runs the package build/test steps by default, publishes npm, and pushes the NuGet package. Pass PowerShell flags after `--`, for example `npm run publish:all -- -SkipTests`.
 
 ## Security
 

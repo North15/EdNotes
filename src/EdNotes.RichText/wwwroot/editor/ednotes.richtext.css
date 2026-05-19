@@ -45,6 +45,7 @@
 
 /* Editor container */
 .rtx-editor {
+  position: relative;
   font-family: var(--rtx-font-family);
   font-size: var(--rtx-font-size);
   line-height: var(--rtx-line-height);
@@ -121,6 +122,26 @@
   cursor: not-allowed;
 }
 
+.rtx-select {
+  background: var(--rtx-color-bg);
+  border: var(--rtx-border-width) solid var(--rtx-color-border);
+  border-radius: var(--rtx-border-radius-sm);
+  color: var(--rtx-color-text);
+  cursor: pointer;
+  font-size: var(--rtx-font-size);
+  height: 32px;
+  padding: 0 var(--rtx-spacing-lg) 0 var(--rtx-spacing-sm);
+}
+
+.rtx-select:hover {
+  background: var(--rtx-color-bg-button-hover);
+}
+
+.rtx-select:focus-visible {
+  outline: none;
+  box-shadow: var(--rtx-focus-ring);
+}
+
 /* Content area */
 .rtx-content {
   padding: var(--rtx-spacing-md);
@@ -130,6 +151,56 @@
 
 .rtx-content:focus {
   outline: none;
+}
+
+.rtx-slash-menu {
+  position: absolute;
+  z-index: 20;
+  min-width: 220px;
+  max-width: min(280px, calc(100% - 24px));
+  padding: var(--rtx-spacing-xs);
+  border: var(--rtx-border-width) solid var(--rtx-color-border);
+  border-radius: var(--rtx-border-radius);
+  background: var(--rtx-color-bg);
+  box-shadow: var(--rtx-shadow-md);
+  display: grid;
+  gap: var(--rtx-spacing-xs);
+}
+
+.rtx-slash-item {
+  border: 0;
+  border-radius: var(--rtx-border-radius-sm);
+  background: transparent;
+  color: var(--rtx-color-text);
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: var(--rtx-spacing-sm);
+  align-items: center;
+  padding: var(--rtx-spacing-sm);
+  text-align: left;
+}
+
+.rtx-slash-item:hover,
+.rtx-slash-item.is-selected {
+  background: var(--rtx-color-bg-button-hover);
+}
+
+.rtx-slash-item:focus-visible {
+  outline: none;
+  box-shadow: var(--rtx-focus-ring);
+}
+
+.rtx-slash-item-icon {
+  color: var(--rtx-color-text-muted);
+  display: inline-flex;
+  justify-content: center;
+  font-size: 0.95em;
+}
+
+.rtx-slash-item-label {
+  font-size: var(--rtx-font-size);
+  line-height: 1.35;
 }
 
 /* Live region for announcements */
@@ -185,6 +256,10 @@
   
   .rtx-button {
     min-width: 36px;
+    height: 36px;
+  }
+
+  .rtx-select {
     height: 36px;
   }
   

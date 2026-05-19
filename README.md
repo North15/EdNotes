@@ -3,7 +3,7 @@
 ![CI](https://github.com/North15/EdNotes/actions/workflows/ci.yml/badge.svg)
 ![NPM Version](https://img.shields.io/npm/v/ednotes-richtext.svg)
 ![NuGet](https://img.shields.io/nuget/v/EdNotes.RichText.svg)
-![Package Version](https://img.shields.io/badge/version-0.5.3-informational.svg)
+![Package Version](https://img.shields.io/badge/version-0.5.5-informational.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 A rich text editor with security-first design, accessibility focus, and modern developer experience. Plugin system, declarative toolbar, CSS variables theming, and TypeScript support.
@@ -16,9 +16,9 @@ A rich text editor with security-first design, accessibility focus, and modern d
 <!-- Include CSS and JS -->
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.3/dist/ednotes.richtext.css"
+  href="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.5/dist/ednotes.richtext.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.3/dist/ednotes.richtext.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ednotes-richtext@0.5.5/dist/ednotes.richtext.umd.min.js"></script>
 
 <!-- Your textarea -->
 <textarea id="content">Start typing...</textarea>
@@ -68,6 +68,29 @@ EdNotesRichText.init({
 </script>
 ```
 
+## 🧪 Local Test Page
+
+Need a zero-build way to poke at the current modules? Open `docs/test-page.html` in a modern browser—it imports the editor straight from `src/EdNotes.RichText/wwwroot/editor` (via an import map for KaTeX).
+
+- Includes a product-style showcase layout, a fixed professional theme, autosave logging, slash commands, dump buttons for HTML/plain text/markdown, and destroy/reset controls to exercise the lifecycle hooks.
+- Runs against the same source files you edit, so no bundling step is required while iterating.
+
+Serve it from the repository root so `docs/test-page.html` can resolve `../src/EdNotes.RichText/wwwroot/editor/*`. Example using `npx serve`:
+
+```powershell
+cd EdNotes
+npx serve . -p 4173
+```
+
+Then visit `http://localhost:4173/docs/test-page.html`.
+
+Quick checks:
+
+- Use `Destroy Editor`, then press `Reset Demo`. The original seed HTML should come back and the showcase should stay on the professional theme.
+- Type `/` inside the editor to open the slash menu, then try `/link` or `/math` to confirm prompt-backed commands still work.
+- Place the caret inside a seeded task item and press `Space` or `Enter` to toggle `data-checked`, then use `Dump HTML` to confirm the task list stays as `<ul data-list="task">...`.
+- Wait at least 4 seconds after an edit and confirm the output panel prints an `[autosave]` entry with the latest HTML snapshot.
+
 ## Feature Highlights
 
 - Strict schema (allowed tags only): paragraphs, h1‑h3, lists (ul/ol/li), blockquote, code/pre, tables (thead/tbody/tr/th/td), task lists (ul[data-list="task"]).
@@ -78,6 +101,7 @@ EdNotesRichText.init({
 - Task list toggle, ensures default `data-checked` flags.
 - Table structural repair (moves stray `tr` into `tbody`, strips disallowed descendants).
 - Link add/remove with protocol allowlist (`https:`, `http:`, `mailto:`, `tel:`) and automatic `target="_blank" rel="noopener noreferrer"`.
+- Slash command palette derived from the enabled toolbar commands for quick block, list, link, table, and math inserts.
 - Autosave hook (interval + change detection) for persistence.
 - Exports: plain text (block separated) and minimal Markdown mapping.
 - Accessibility: toolbar `role=toolbar` + roving tabindex, ARIA pressed state reflection, live region announcements (`Applied bold`, `Applied heading h2`), keyboard shortcuts (Ctrl+B/I/U, Ctrl+Alt+1/2/3, Tab indent), polite updates.

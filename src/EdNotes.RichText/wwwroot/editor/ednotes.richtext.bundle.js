@@ -10,6 +10,8 @@ function _all() {
   return Array.from(instances);
 }
 
+const EXCLUDED_SLASH_COMMANDS = new Set(["undo", "redo", "unlink"]);
+
 const LEGACY_TOOLBAR_LAYOUT = [
   [
     { name: "undo", text: "↺", aria: "Undo", action: "undo" },
@@ -53,6 +55,47 @@ function cloneLegacyLayout() {
   return LEGACY_TOOLBAR_LAYOUT.map((group) => group.map((btn) => ({ ...btn })));
 }
 
+function buildSlashCommands(layout) {
+  const slashCommands = [];
+  const seen = new Set();
+  const groups = layout && layout.length ? layout : cloneLegacyLayout();
+  groups.forEach((group) => {
+    group.forEach((def) => {
+      collectSlashCommand(def, slashCommands, seen);
+    });
+  });
+  return slashCommands;
+}
+
+function collectSlashCommand(def, slashCommands, seen, parentLabel) {
+  if (!def) return;
+
+  if (def.type === "dropdown") {
+    (def.options || []).forEach((opt) => {
+      collectSlashCommand(opt, slashCommands, seen, def.label || def.name);
+    });
+    return;
+  }
+
+  if (!def.command) return;
+
+  const name = def.name || def.command;
+  if (EXCLUDED_SLASH_COMMANDS.has(name)) return;
+
+  if (seen.has(def.command)) return;
+  seen.add(def.command);
+
+  slashCommands.push({
+    name,
+    label: def.label || def.aria || def.name || def.command,
+    command: def.command,
+    text: def.text || def.icon || "/",
+    keywords: [parentLabel, def.name, def.label, def.aria, def.command].filter(
+      Boolean
+    ),
+  });
+}
+
 function mountToolbar(editor, layout) {
   const tb = editor.root.querySelector(".rtx-toolbar");
   if (!tb) return;
@@ -78,15 +121,24 @@ function createButtonControl(editor, def, focusables) {
   if (!def) return null;
   const btn = document.createElement("button");
   btn.type = "button";
+  btn.className = "rtx-button";
+  const tooltip = def.title || def.aria || def.label || def.name || "Button";
   btn.textContent = def.text || def.icon || def.label || def.name || "Button";
-  btn.setAttribute(
-    "aria-label",
-    def.aria || def.label || def.name || btn.textContent
-  );
+  btn.setAttribute("aria-label", tooltip);
+  btn.title = tooltip;
   if (def.name) btn.dataset.plugin = def.name;
   if (def.command) btn.dataset.cmd = def.command;
   if (def.action) btn.dataset.action = def.action;
   if (def.disabled) btn.disabled = true;
+  btn.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+    if (typeof editor._rememberSelection === "function") {
+      editor._rememberSelection();
+    }
+    if (typeof editor.focus === "function") {
+      editor.focus();
+    }
+  });
   btn.addEventListener("click", () => handleToolbarAction(editor, def));
   registerRovingControl(btn, focusables);
   return btn;
@@ -94,13 +146,21 @@ function createButtonControl(editor, def, focusables) {
 
 function createDropdownControl(editor, def, focusables) {
   const select = document.createElement("select");
-  select.setAttribute("aria-label", def.label || def.name || "Options");
+  select.className = "rtx-select";
+  const tooltip = def.title || def.label || def.name || "Options";
+  select.setAttribute("aria-label", tooltip);
+  select.title = tooltip;
   const placeholder = document.createElement("option");
   placeholder.value = "";
   placeholder.textContent = def.label || def.name || "Select";
   placeholder.disabled = true;
   placeholder.selected = true;
   select.appendChild(placeholder);
+  select.addEventListener("mousedown", () => {
+    if (typeof editor._rememberSelection === "function") {
+      editor._rememberSelection();
+    }
+  });
   (def.options || []).forEach((opt) => {
     const optionEl = document.createElement("option");
     optionEl.value = opt.value || opt.command || opt.name;
@@ -138,6 +198,12 @@ function registerRovingControl(el, focusables) {
 
 function handleToolbarAction(editor, def) {
   if (!def) return;
+  if (typeof editor._restoreSavedSelection === "function") {
+    editor._restoreSavedSelection();
+  }
+  if (typeof editor.focus === "function") {
+    editor.focus();
+  }
   if (typeof def.run === "function") {
     def.run(editor);
     return;
@@ -165,9 +231,20 @@ export const RichText = {
     nodes.forEach((t) => {
       if (t._rtxAttached) return;
       t._rtxAttached = true;
-      const { toolbarLayout, promptLink, promptMath, ...editorOptions } =
-        options;
-      const ed = new EditorCore(t, editorOptions);
+      const {
+        toolbarLayout,
+        promptLink,
+        promptMath,
+        slashCommands,
+        ...editorOptions
+      } = options;
+      const layout = Array.isArray(toolbarLayout) ? toolbarLayout : null;
+      const ed = new EditorCore(t, {
+        ...editorOptions,
+        slashCommands: Array.isArray(slashCommands)
+          ? slashCommands
+          : buildSlashCommands(layout),
+      });
       ed.bus.register("strong", markCommand("strong"));
       ed.bus.register("em", markCommand("em"));
       ed.bus.register("u", markCommand("u"));
@@ -183,7 +260,6 @@ export const RichText = {
       ed.bus.register("math:add", mathCommand({ promptMath }));
       ed.bus.register("format:clear", clearFormatCommand());
       ed.bus.register("table:insert", tableInsertCommand());
-      const layout = Array.isArray(toolbarLayout) ? toolbarLayout : null;
       mountToolbar(ed, layout);
       ed.root.setAttribute("data-rtx-attached", "true");
       t.setAttribute("data-rtx-source", "true");
@@ -220,10 +296,13 @@ export const RichText = {
       instances.clear();
       return;
     }
+    const isNodeList =
+      typeof globalThis.NodeList !== "undefined" &&
+      selector instanceof globalThis.NodeList;
     const targets =
       typeof selector === "string"
         ? document.querySelectorAll(selector)
-        : selector instanceof NodeList || Array.isArray(selector)
+        : isNodeList || Array.isArray(selector)
         ? selector
         : [selector];
     Array.from(targets).forEach((el) => {
@@ -243,8 +322,8 @@ export const RichText = {
 };
 
 // Version injected manually (consider automated replacement in future build step)
-// Bump version for documentation/demo fixes (theme switching + demo content adjustments)
-RichText.version = "0.5.3";
+// Bump version for release metadata alignment.
+RichText.version = "0.5.5";
 
 function blockCommand(tag) {
   return (ed) => {
@@ -298,11 +377,21 @@ function linkAddCommand({ promptLink } = {}) {
           typeof window.prompt === "function"
             ? window.prompt("Enter URL (https://...)", "https://")
             : null;
-  return () => {
-    const sel = document.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
+  return (ed) => {
+    if (typeof ed._rememberSelection === "function") {
+      ed._rememberSelection();
+    }
+    const promptSelection = ed._selectionBookmark;
     const url = promptFn();
     if (!url) return;
+    if (promptSelection) {
+      ed._selectionBookmark = promptSelection;
+      if (typeof ed._restoreSavedSelection === "function") {
+        ed._restoreSavedSelection();
+      }
+    }
+    const sel = document.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
     const a = document.createElement("a");
     a.href = url;
     enforceLinkPolicy(a);
@@ -375,11 +464,21 @@ function mathCommand({ promptMath } = {}) {
           typeof window.prompt === "function"
             ? window.prompt("Enter LaTeX:", "x^2")
             : null;
-  return () => {
-    const sel = document.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
+  return (ed) => {
+    if (typeof ed._rememberSelection === "function") {
+      ed._rememberSelection();
+    }
+    const promptSelection = ed._selectionBookmark;
     const latex = promptFn();
     if (!latex) return;
+    if (promptSelection) {
+      ed._selectionBookmark = promptSelection;
+      if (typeof ed._restoreSavedSelection === "function") {
+        ed._restoreSavedSelection();
+      }
+    }
+    const sel = document.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
     const span = document.createElement("span");
     span.className = "math";
     span.textContent = latex;
@@ -395,7 +494,32 @@ function mathCommand({ promptMath } = {}) {
 }
 
 function clearFormatCommand() {
-  return () => {
+  const formatTags = new Set(["strong", "em", "u"]);
+
+  function collectFullySelectedAncestors(range, root) {
+    const matches = [];
+    const seen = new Set();
+
+    [range.startContainer, range.endContainer].forEach((node) => {
+      let current = node && node.nodeType === 3 ? node.parentNode : node;
+      while (current && current !== root) {
+        const tag = current.tagName && current.tagName.toLowerCase();
+        if (
+          formatTags.has(tag) &&
+          current.textContent === range.toString() &&
+          !seen.has(current)
+        ) {
+          matches.push(current);
+          seen.add(current);
+        }
+        current = current.parentNode;
+      }
+    });
+
+    return matches;
+  }
+
+  return (ed) => {
     if (typeof document.execCommand === "function") {
       try {
         document.execCommand("removeFormat");
@@ -407,6 +531,20 @@ function clearFormatCommand() {
     const sel = document.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
+    const ancestors = ed
+      ? collectFullySelectedAncestors(range, ed.content)
+      : [];
+
+    if (ancestors.length) {
+      ancestors.forEach((el) => {
+        const parent = el.parentNode;
+        if (!parent) return;
+        while (el.firstChild) parent.insertBefore(el.firstChild, el);
+        el.remove();
+      });
+      return;
+    }
+
     const frag = range.extractContents();
     const walker = document.createTreeWalker(
       frag,

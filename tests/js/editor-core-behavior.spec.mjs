@@ -18,6 +18,15 @@ function selectNodeContents(node) {
   sel.addRange(range);
 }
 
+function collapseAt(node, offset) {
+  const sel = document.getSelection();
+  const range = document.createRange();
+  range.setStart(node, Math.min(offset, node.length || 0));
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
 afterEach(() => {
   RichText.destroy();
   RichText._clearInstances();
@@ -70,5 +79,28 @@ describe("Editor core behavior", () => {
     expect(document.querySelector(".rtx-editor")).toBeFalsy();
     expect(ta.style.display).not.toBe("none");
     expect(ta._rtxAttached).toBeFalsy();
+  });
+
+  test("typing slash opens the command menu and executes math", () => {
+    createTextarea("slash", "<p>/math</p>");
+    EdNotesRichText.init({ selector: "#slash", promptMath: () => "x^2" });
+    const instance = RichText._all()[0];
+    const paragraph = instance.content.querySelector("p");
+
+    collapseAt(paragraph.firstChild, paragraph.firstChild.textContent.length);
+    document.dispatchEvent(new Event("selectionchange"));
+    instance.content.dispatchEvent(new Event("input", { bubbles: true }));
+
+    const slashMenu = instance.root.querySelector(".rtx-slash-menu");
+    expect(slashMenu.hidden).toBe(false);
+    expect(slashMenu.textContent).toContain("Math Equation");
+
+    instance.content.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true })
+    );
+
+    expect(instance.content.querySelector(".math")).toBeTruthy();
+    expect(instance.content.textContent).not.toContain("/math");
+    EdNotesRichText.destroy("#slash");
   });
 });
