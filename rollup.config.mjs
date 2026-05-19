@@ -1,6 +1,26 @@
-import terser from '@rollup/plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import { minify } from 'terser';
+
+function minifyUmdPlugin() {
+  return {
+    name: 'minify-umd',
+    async renderChunk(code, chunk, outputOptions) {
+      const result = await minify(code, {
+        sourceMap: outputOptions.sourcemap ? { asObject: true } : false
+      });
+
+      if (!result.code) {
+        throw new Error(`Terser produced no output for ${chunk.fileName}.`);
+      }
+
+      return {
+        code: result.code,
+        map: result.map ?? null
+      };
+    }
+  };
+}
 
 export default [
   // ESM (original source kept as-is)
@@ -37,6 +57,6 @@ export default [
       globals: { katex: 'katex' }
     },
     external: ['katex'],
-    plugins: [resolve(), commonjs(), terser()] 
+    plugins: [resolve(), commonjs(), minifyUmdPlugin()]
   }
 ];
