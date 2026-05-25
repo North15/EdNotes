@@ -27,7 +27,7 @@
   <PackagePath>contentFiles/any/any/Scripts/EdNotes.RichText/</PackagePath>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
-  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
