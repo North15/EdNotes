@@ -79,6 +79,6 @@
   "terser": "5.47.1"
   },
   "dependencies": {
-    "katex": "^0.16.22"
+    "katex": "^0.17.0"
   }
 }
